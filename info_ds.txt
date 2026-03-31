@@ -1,0 +1,20 @@
+==============================
+RESUMO DO DATASET FINAL
+==============================
+
+Conjunto de TRAIN:
+  - class_1: 448 imagens
+  - class_3: 384 imagens
+  - class_4: 192 imagens
+  - class_2: 64 imagens
+
+Conjunto de VAL:
+  - class_1: 112 imagens
+  - class_3: 96 imagens
+  - class_4: 48 imagens
+  - class_2: 16 imagens
+------------------------------
+TOTAL TREINO: 1088
+TOTAL VALIDAÇÃO: 272
+TOTAL GERAL: 1360
+==============================

@@ -1,0 +1,39 @@
+Epoch 1/50
+Train Loss: 0.1555 Acc: 0.9577
+Val Loss: 0.0261 Acc: 1.0000
+Epoch duration: 3.53s
+Epoch 2/50
+Train Loss: 0.0258 Acc: 0.9917
+Val Loss: 0.0006 Acc: 1.0000
+Epoch duration: 3.39s
+Epoch 3/50
+Train Loss: 0.0215 Acc: 0.9945
+Val Loss: 0.0007 Acc: 1.0000
+Epoch duration: 3.36s
+Epoch 4/50
+Train Loss: 0.0570 Acc: 0.9871
+Val Loss: 0.0117 Acc: 1.0000
+Epoch duration: 3.26s
+Epoch 5/50
+Train Loss: 0.0194 Acc: 0.9917
+Val Loss: 0.0003 Acc: 1.0000
+Epoch duration: 3.30s
+Epoch 6/50
+Train Loss: 0.0310 Acc: 0.9945
+Val Loss: 0.0005 Acc: 1.0000
+Epoch duration: 3.32s
+Epoch 7/50
+Train Loss: 0.0053 Acc: 0.9982
+Val Loss: 0.0001 Acc: 1.0000
+Epoch duration: 3.28s
+Epoch 8/50
+Train Loss: 0.0016 Acc: 1.0000
+Val Loss: 0.0000 Acc: 1.0000
+Epoch duration: 3.28s
+Epoch 9/50
+Train Loss: 0.0017 Acc: 0.9991
+Val Loss: 0.0001 Acc: 1.0000
+Epoch duration: 3.39s
+--- Early stopping triggered at epoch 9 ---
+Training complete in 0m 30s
+All files saved in ./training_results
