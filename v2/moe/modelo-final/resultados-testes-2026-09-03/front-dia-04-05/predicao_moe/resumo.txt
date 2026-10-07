@@ -1,0 +1,18 @@
+=========================================
+RELATÓRIO DE EXECUÇÃO - PIPELINE MOE
+=========================================
+Data/Hora:         2026-09-03 22:46:33
+Arquivo Entrada:   front-dia-04-05.avi
+Caminho Entrada:   /home/vini/tcc/moe/modelo-final/testes/front-dia-04-05.avi
+Tipo de Entrada:   Vídeo
+Diretório Saída:   /home/vini/tcc/moe/modelo-final/resultados-testes-2026-09-03/front-dia-04-05/predicao_moe
+-----------------------------------------
+CLASSIFICAÇÃO CNN (Cenário):
+  - Classe:        class_1
+  - Descrição:     Frente Dia
+  - Confiança:     99.32%
+-----------------------------------------
+DETECÇÃO YOLO (Especialista):
+  - Modelo Usado:  best-front-dia.pt
+  - Tempo Gasto:   1.89 segundos
+=========================================

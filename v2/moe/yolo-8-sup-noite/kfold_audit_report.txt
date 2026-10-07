@@ -1,0 +1,26 @@
+Relatório de Auditoria - yolo-8-sup-noite
+Diretório de origem: /run/media/vini/061a1dd7-8e19-49bb-a45c-87c4603733ea/vini/ds/ds_sup_noite/images
+Total de imagens encontradas: 2032
+Imagens excluídas (fora do padrão regex, ordem cronológica não garantida): 0
+Imagens válidas usadas no split: 2032
+Vídeos/sessões identificados: 9
+  - 'Cam02_2025_04_28_18_05_43_capril_mp4': 992 frames
+  - 'Cam04_2025_04_25_19_07_07_capril': 150 frames
+  - 'Cam04_2025_04_26_00_07_01_capril': 150 frames
+  - 'Cam04_2025_04_26_04_06_55_capril': 150 frames
+  - 'Cam04_2025_04_27_00_06_23_capril': 150 frames
+  - 'Cam04_2025_04_29_02_05_12_capril': 150 frames
+  - 'Cam04_2025_04_26_18_06_32_capril': 125 frames
+  - 'Cam04_2025_04_27_22_05_51_capril': 125 frames
+  - 'Cam02_2025_04_28_18_05_43_capril_avi': 40 frames
+Purge buffer aplicado: 15 frames em cada lado do bloco de validação
+Total de amostras removidas pela zona de purga (todos os folds): 1066
+
+Contagem por fold (após purge):
+  Fold 0: treino=1490, val=407
+  Fold 1: treino=1363, val=406
+  Fold 2: treino=1355, val=407
+  Fold 3: treino=1363, val=406
+  Fold 4: treino=1491, val=406
+
+Imagens excluídas (lista completa, 0 arquivos):

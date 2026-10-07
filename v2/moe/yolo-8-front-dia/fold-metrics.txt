@@ -1,0 +1,11 @@
+Analisando resultados na pasta: 'runs/detect/runs/detect'...
+-> fold_1: mAP50 encontrado = 0.9950
+-> fold_5: mAP50 encontrado = 0.9949
+-> fold_4: mAP50 encontrado = 0.9950
+-> fold_2: mAP50 encontrado = 0.9950
+-> fold_3: mAP50 encontrado = 0.9949
+
+--- RESULTADO RECUPERADO ---
+Vencedor: fold_4
+Melhor mAP50: 0.9950
+Caminho original: runs/detect/runs/detect/fold_4/weights/best.pt

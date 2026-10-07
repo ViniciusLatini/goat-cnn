@@ -1,0 +1,70 @@
+# ============================================================
+# .gitignore — TCC MoE caprinos
+# Versiona: código, configs, textos LaTeX, tabelas/gráficos de
+# métricas (results.csv, *.png dos runs). NÃO versiona: pesos,
+# vídeos, datasets, saídas de predição e caches.
+# ============================================================
+
+# ---------- Pesos / checkpoints ----------
+*.pt
+*.pth
+*.onnx
+*.engine
+*.torchscript
+weights/
+best-weights/
+best-weights copy/
+cnn-weight/
+
+# ---------- Vídeos ----------
+*.avi
+*.mp4
+*.mov
+*.mkv
+
+# ---------- Saídas de inferência (frames/labels/vídeos preditos) ----------
+**/runs/detect/predict*/
+**/runs/detect/prediction_results*/
+v2/yolo-8-overall/output/
+v2/moe/modelo-final/resultados/
+v2/moe/modelo-final/testes-clips/
+v2/moe/goat-cnn/occlusion_results/
+
+# ---------- Datasets (ficam fora do repo / HD externo) ----------
+dataset/
+datasets/
+v2/moe/goat-cnn/test_imgs/
+v2/yolo-8-overall/backup_dataset_overall_folds_old/
+
+# ---------- Caches ----------
+*.cache
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+# ---------- LaTeX (artefatos de compilação) ----------
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.synctex.gz
+*.synctex(busy)
+*.nav
+*.snm
+*.vrb
+
+# ---------- Ambiente / editor / SO ----------
+.env
+.venv/
+venv/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db

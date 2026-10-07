@@ -1,0 +1,25 @@
+# Pesos e checkpoints (grandes demais para git; ver README de cada módulo para procedência)
+*.pt
+*.pth
+weights/
+modelo-final/best-weights/
+modelo-final/cnn-weight/
+
+# Saídas de treino/inferência
+*/runs/
+modelo-final/resultados/
+modelo-final/testes-clips/
+goat-cnn/training_results/
+goat-cnn/occlusion_results/
+
+# Caches de dataloader/YOLO
+*.cache
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Datasets (vivem no HD externo montado, não no repo)
+goat-cnn/dataset/
+goat-cnn/test_imgs/

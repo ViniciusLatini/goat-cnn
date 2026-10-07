@@ -1,0 +1,30 @@
+Relatório de Auditoria - yolo-8-front-noite
+Diretório de origem: /run/media/vini/061a1dd7-8e19-49bb-a45c-87c4603733ea/vini/ds/ds_front_noite/images
+Total de imagens encontradas: 2001
+Imagens excluídas (fora do padrão regex, ordem cronológica não garantida): 0
+Imagens válidas usadas no split: 2001
+Vídeos/sessões identificados: 13
+  - 'Cam03_2025_04_27_04_16_58_capril_redimencionado_mp4': 451 frames
+  - 'Cam03_2025_04_26_23_17_04_capril': 150 frames
+  - 'Cam03_2025_04_27_03_16_59_capril': 150 frames
+  - 'Cam03_2025_04_27_18_16_33_capril': 150 frames
+  - 'Cam03_2025_04_27_23_16_27_capril': 150 frames
+  - 'Cam03_2025_04_28_03_16_22_capril': 150 frames
+  - 'Cam03_2025_04_28_18_15_58_capril': 150 frames
+  - 'Cam03_2025_04_28_23_15_52_capril': 150 frames
+  - 'Cam03_2025_04_29_04_15_46_capril': 150 frames
+  - 'Cam03_2025_04_26_18_17_10_capril': 140 frames
+  - 'Cam03_2025_04_26_01_17_38_capril': 100 frames
+  - 'Cam03_2025_04_25_20_17_43_capril': 60 frames
+  - 'Cam03_2025_04_29_01_15_49_capril': 50 frames
+Purge buffer aplicado: 15 frames em cada lado do bloco de validação
+Total de amostras removidas pela zona de purga (todos os folds): 1544
+
+Contagem por fold (após purge):
+  Fold 0: treino=1405, val=401
+  Fold 1: treino=1219, val=400
+  Fold 2: treino=1211, val=400
+  Fold 3: treino=1219, val=400
+  Fold 4: treino=1406, val=400
+
+Imagens excluídas (lista completa, 0 arquivos):

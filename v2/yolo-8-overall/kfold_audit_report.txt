@@ -1,0 +1,53 @@
+Relatório de Auditoria - yolo-8-overall (Baseline Monolítico)
+Diretório de origem: /run/media/vini/061a1dd7-8e19-49bb-a45c-87c4603733ea/vini/ds-overall-raw
+Total de imagens encontradas: 8604
+Imagens excluídas (fora do padrão regex, ordem cronológica não garantida): 0
+Imagens válidas usadas no split: 8604
+Vídeos/sessões identificados: 36
+  - 'Cam04_2025_04_27_09_06_10_capril': 1670 frames
+  - 'Cam02_2025_04_28_18_05_43_capril_mp4': 992 frames
+  - 'Cam01_2025_04_28_13_35_03_capril_mp4': 721 frames
+  - 'sequence_frames': 719 frames
+  - 'Cam01_2025_04_28_08_04_56_capril_mp4': 451 frames
+  - 'Cam03_2025_04_27_04_16_58_capril_redimencionado_mp4': 451 frames
+  - 'Cam03_2025_04_26_10_17_24_capril': 150 frames
+  - 'Cam03_2025_04_26_15_17_15_capril': 150 frames
+  - 'Cam03_2025_04_26_23_17_04_capril': 150 frames
+  - 'Cam03_2025_04_27_03_16_59_capril': 150 frames
+  - 'Cam03_2025_04_27_08_16_51_capril': 150 frames
+  - 'Cam03_2025_04_27_18_16_33_capril': 150 frames
+  - 'Cam03_2025_04_27_23_16_27_capril': 150 frames
+  - 'Cam03_2025_04_28_03_16_22_capril': 150 frames
+  - 'Cam03_2025_04_28_18_15_58_capril': 150 frames
+  - 'Cam03_2025_04_28_23_15_52_capril': 150 frames
+  - 'Cam03_2025_04_29_04_15_46_capril': 150 frames
+  - 'Cam03_2025_05_01_14_14_12_capril': 150 frames
+  - 'Cam03_2025_05_03_10_13_02_capril': 150 frames
+  - 'Cam04_2025_04_25_19_07_07_capril': 150 frames
+  - 'Cam04_2025_04_26_00_07_01_capril': 150 frames
+  - 'Cam04_2025_04_26_04_06_55_capril': 150 frames
+  - 'Cam04_2025_04_27_00_06_23_capril': 150 frames
+  - 'Cam04_2025_04_29_02_05_12_capril': 150 frames
+  - 'Cam03_2025_04_26_18_17_10_capril': 140 frames
+  - 'Cam04_2025_04_26_18_06_32_capril': 125 frames
+  - 'Cam04_2025_04_27_22_05_51_capril': 125 frames
+  - 'Cam03_2025_04_25_16_17_49_capril': 100 frames
+  - 'Cam03_2025_04_26_01_17_38_capril': 100 frames
+  - 'Cam03_2025_04_25_20_17_43_capril': 60 frames
+  - 'Cam03_2025_04_29_01_15_49_capril': 50 frames
+  - 'Cam02_2025_04_28_08_05_58_capril_avi': 40 frames
+  - 'Cam02_2025_04_28_10_05_55_capril_avi': 40 frames
+  - 'Cam02_2025_04_28_14_05_50_capril_avi': 40 frames
+  - 'Cam02_2025_04_28_16_05_46_capril_avi': 40 frames
+  - 'Cam02_2025_04_28_18_05_43_capril_avi': 40 frames
+Purge buffer aplicado: 15 frames em cada lado do bloco de validação
+Total de amostras removidas pela zona de purga (todos os folds): 4234
+
+Contagem por fold (após purge):
+  Fold 0: treino=6340, val=1724
+  Fold 1: treino=5847, val=1720
+  Fold 2: treino=5803, val=1721
+  Fold 3: treino=5847, val=1720
+  Fold 4: treino=6345, val=1719
+
+Imagens excluídas (lista completa, 0 arquivos):

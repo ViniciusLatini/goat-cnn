@@ -1,0 +1,18 @@
+=========================================
+RELATÓRIO DE EXECUÇÃO - PIPELINE MOE
+=========================================
+Data/Hora:         2026-08-17 18:32:12
+Arquivo Entrada:   front-noite-26-04.avi
+Caminho Entrada:   /home/vini/tcc/moe/modelo-final/testes/front-noite-26-04.avi
+Tipo de Entrada:   Vídeo
+Diretório Saída:   /home/vini/tcc/moe/modelo-final/resultados-front-noite/predicao_moe
+-----------------------------------------
+CLASSIFICAÇÃO CNN (Cenário):
+  - Classe:        class_2
+  - Descrição:     Frente Noite
+  - Confiança:     62.67%
+-----------------------------------------
+DETECÇÃO YOLO (Especialista):
+  - Modelo Usado:  best-front-noite.pt
+  - Tempo Gasto:   1.58 segundos
+=========================================

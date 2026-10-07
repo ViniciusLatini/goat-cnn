@@ -1,0 +1,18 @@
+=========================================
+RELATÓRIO DE EXECUÇÃO - PIPELINE MOE
+=========================================
+Data/Hora:         2026-08-17 18:39:19
+Arquivo Entrada:   sup-dia-29-04.avi
+Caminho Entrada:   /home/vini/tcc/moe/modelo-final/testes/sup-dia-29-04.avi
+Tipo de Entrada:   Vídeo
+Diretório Saída:   /home/vini/tcc/moe/modelo-final/resultados-sup-dia/predicao_moe
+-----------------------------------------
+CLASSIFICAÇÃO CNN (Cenário):
+  - Classe:        class_3
+  - Descrição:     Cima Dia
+  - Confiança:     99.38%
+-----------------------------------------
+DETECÇÃO YOLO (Especialista):
+  - Modelo Usado:  best-sup-dia.pt
+  - Tempo Gasto:   1.93 segundos
+=========================================

@@ -1,0 +1,19 @@
+Relatório de Auditoria - yolo-8-front-dia
+Diretório de origem: /run/media/vini/061a1dd7-8e19-49bb-a45c-87c4603733ea/vini/ds/ds_front_dia/images
+Total de imagens encontradas: 1172
+Imagens excluídas (fora do padrão regex, ordem cronológica não garantida): 0
+Imagens válidas usadas no split: 1172
+Vídeos/sessões identificados: 2
+  - 'Cam01_2025_04_28_13_35_03_capril_mp4': 721 frames
+  - 'Cam01_2025_04_28_08_04_56_capril_mp4': 451 frames
+Purge buffer aplicado: 15 frames em cada lado do bloco de validação
+Total de amostras removidas pela zona de purga (todos os folds): 240
+
+Contagem por fold (após purge):
+  Fold 0: treino=906, val=236
+  Fold 1: treino=878, val=234
+  Fold 2: treino=878, val=234
+  Fold 3: treino=878, val=234
+  Fold 4: treino=908, val=234
+
+Imagens excluídas (lista completa, 0 arquivos):

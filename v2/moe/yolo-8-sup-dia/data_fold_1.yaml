@@ -1,0 +1,6 @@
+# YAML do Fold 1 - Temporal Split com purge buffer (15 frames)
+train: /home/vini/tcc/moe/yolo-8-sup-dia/train_fold_1.txt
+val: /home/vini/tcc/moe/yolo-8-sup-dia/val_fold_1.txt
+
+nc: 1
+names: ['goat']

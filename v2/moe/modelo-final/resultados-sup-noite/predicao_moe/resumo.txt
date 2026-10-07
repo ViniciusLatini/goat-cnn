@@ -1,0 +1,18 @@
+=========================================
+RELATÓRIO DE EXECUÇÃO - PIPELINE MOE
+=========================================
+Data/Hora:         2026-08-17 18:38:52
+Arquivo Entrada:   sup-noite-29-04.avi
+Caminho Entrada:   /home/vini/tcc/moe/modelo-final/testes/sup-noite-29-04.avi
+Tipo de Entrada:   Vídeo
+Diretório Saída:   /home/vini/tcc/moe/modelo-final/resultados-sup-noite/predicao_moe
+-----------------------------------------
+CLASSIFICAÇÃO CNN (Cenário):
+  - Classe:        class_4
+  - Descrição:     Cima Noite
+  - Confiança:     99.99%
+-----------------------------------------
+DETECÇÃO YOLO (Especialista):
+  - Modelo Usado:  best-sup-noite.pt
+  - Tempo Gasto:   1.65 segundos
+=========================================

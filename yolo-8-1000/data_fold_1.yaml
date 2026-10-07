@@ -1,0 +1,6 @@
+
+train: /home/vini/tcc/yolo-8-1000/train_fold_1.txt
+val: /home/vini/tcc/yolo-8-1000/val_fold_1.txt
+
+nc: 1
+names: ['goat']
