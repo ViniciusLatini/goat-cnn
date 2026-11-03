@@ -37,7 +37,7 @@ Antes de construir uma base própria, verificou-se se um detector de propósito 
 \subsection{Extração dos Quadros e Rotulação}
 \label{subsec:rotulacao}
 
-Os quadros de cada sessão foram extraídos dos vídeos e mantidos na ordem em que foram gravados. Nas sessões usadas neste trabalho, os quadros foram aproveitados sem subamostragem adicional além da taxa de 8 FPS da câmera, o que preserva a sequência temporal de cada gravação e permite reconstruí-la a partir do índice do quadro, registrado no nome do arquivo.
+Os quadros de cada sessão foram extraídos dos vídeos e mantidos na ordem em que foram gravados. Nas sessões usadas neste trabalho, os quadros foram aproveitados sem subamostragem adicional além da taxa de 8 FPS da câmera, o que preserva a sequência temporal de cada gravação e permite reconstruí-la a partir do índice do quadro, registrado no nome do arquivo. \todo{Rever: a marcação de hora gravada nas imagens mostra que ao menos parte das sessões foi subamostrada. A sessão \texttt{Cam03\_2025\_04\_26\_18\_17\_10} tem 140 quadros entre 18h17min10s e 19h16min40s (cerca de um quadro a cada 26 s), e as três sessões da Cam04 de 26/04 têm 125--150 quadros em cerca de uma hora cada. Nessas sessões, a zona de purga de 15 quadros corresponde a uns 6 minutos, e não a 2 segundos. O nome dos quadros das quatro sessões curtas da Cam02 em Superior Dia (\texttt{\ldots\_random\_N}) sugere amostragem aleatória, caso em que o índice não garante a ordem temporal.}
 
 A rotulação foi manual e seguiu a definição de uma única classe, \texttt{goat}. Cada animal visível na baia principal foi delimitado por uma caixa ajustada ao seu contorno, de modo a deixar o mínimo de fundo dentro da caixa. Esses critérios foram estabelecidos em um guia de rotulação elaborado nas primeiras fases do projeto, quando a anotação era feita por voluntários da UFJF e da UFSJ na ferramenta \textit{Makesense.ai}. A base final foi rotulada por alunos da UFSJ com o auxílio do EasyLabel\footnote{Disponível em: \url{https://github.com/Gabriel0Bernardini/EasyLabel}.}, uma ferramenta desenvolvida por eles para padronizar a anotação e organizar os arquivos no formato exigido pelo YOLO. \todo{Confirmar com a equipe da UFSJ se os critérios do guia original (apenas animais da baia principal, caixas justas) foram mantidos na rotulação com o EasyLabel.}
 
@@ -60,7 +60,7 @@ Antes do treinamento, a base passou por três verificações automáticas: nenhu
 \subsection{Caracterização da Base}
 \label{subsec:caracterizacao-base}
 
-A Tabela~\ref{tab:dataset-deteccao} resume a base de detecção por cenário. Ao todo, são 8.604 imagens e 66.705 caixas delimitadoras, provenientes das 36 sessões de gravação. Os cenários têm tamanhos parecidos, entre 2.001 e 2.549 imagens, o que evita que algum especialista seja treinado com muito menos dados que os demais.
+A Tabela~\ref{tab:dataset-deteccao} resume a base de detecção por cenário. Ao todo, são 8.604 imagens e 68.832 caixas delimitadoras, provenientes das 36 sessões de gravação. Os cenários têm tamanhos parecidos, entre 2.001 e 2.549 imagens, o que evita que algum especialista seja treinado com muito menos dados que os demais.
 
 \begin{table}[htb]
 \centering
@@ -70,12 +70,12 @@ A Tabela~\ref{tab:dataset-deteccao} resume a base de detecção por cenário. Ao
 \hline
 \textbf{Cenário} & \textbf{Câmeras} & \textbf{Sessões} & \textbf{Imagens} & \textbf{Caixas} & \textbf{Caixas/imagem} \\
 \hline
-Frontal Dia & Cam01, Cam03 & 8 & 2.022 & 16.185 & 8,01 \\
-Frontal Noite & Cam03 & 13 & 2.001 & 16.008 & 8,00 \\
-Superior Dia & Cam02, Cam04 & 6 & 2.549 & 18.258 & 7,16 \\
+Frontal Dia & Cam01, Cam03 & 8 & 2.022 & 16.185 & 8,00 \\
+Frontal Noite & Cam03 & 13 & 2.001 & 16.009 & 8,00 \\
+Superior Dia & Cam02, Cam04 & 6 & 2.549 & 20.384 & 8,00 \\
 Superior Noite & Cam02, Cam04 & 9 & 2.032 & 16.254 & 8,00 \\
 \hline
-\textbf{Total} & Cam01--Cam04 & \textbf{36} & \textbf{8.604} & \textbf{66.705} & 7,75 \\
+\textbf{Total} & Cam01--Cam04 & \textbf{36} & \textbf{8.604} & \textbf{68.832} & 8,00 \\
 \hline
 \end{tabular}
 
@@ -83,7 +83,7 @@ Superior Noite & Cam02, Cam04 & 9 & 2.032 & 16.254 & 8,00 \\
 Fonte: Elaborada pelo autor.
 \end{table}
 
-Em três dos quatro cenários, a média é de praticamente oito caixas por imagem, o que corresponde ao rebanho completo. No cenário Superior Dia, a média cai para 7,16, o que indica que, em parte das imagens dessa perspectiva, nem todos os oito animais estão anotados. \todo{Verificar a causa: animais fora do campo de visão da câmera superior, oclusão total entre animais ou omissão de rótulos.} O número de sessões também varia entre os cenários, de 6 em Superior Dia a 13 em Frontal Noite. Esse número importa para a avaliação, porque um cenário com poucas sessões oferece menos variedade de dias e horários, e os blocos de validação desse cenário tendem a se parecer mais com os de treino.
+Nos quatro cenários, a média é de oito caixas por imagem, o que corresponde ao rebanho completo. Das 8.604 imagens, 8.555 (99,4\%) têm exatamente oito caixas. As 49 restantes têm entre seis e nove caixas, com exceção de uma imagem de Superior Dia com 13 caixas, número incompatível com o rebanho e que indica erro de anotação. O número de sessões também varia entre os cenários, de 6 em Superior Dia a 13 em Frontal Noite. Esse número importa para a avaliação, porque um cenário com poucas sessões oferece menos variedade de dias e horários, e os blocos de validação desse cenário tendem a se parecer mais com os de treino.
 
 \section{Protocolo de Validação Cruzada por Blocos Temporais}
 \label{sec:protocolo-validacao}
@@ -230,7 +230,9 @@ Os cinco \textit{folds} foram treinados em sequência, cada um a partir dos peso
 
 A rede de roteamento resolve uma tarefa de classificação de imagens com quatro classes, uma por cenário: \texttt{class\_1} (Frontal Dia), \texttt{class\_2} (Frontal Noite), \texttt{class\_3} (Superior Dia) e \texttt{class\_4} (Superior Noite). Como a tarefa é reconhecer o cenário, e não localizar animais, essa rede não precisa de caixas delimitadoras: basta saber de que cenário vem cada imagem, informação dada pela pasta de vídeos de onde a imagem foi extraída.
 
-A base foi montada a partir de vídeos separados por cenário. De cada cenário, foram extraídos quadros em intervalos regulares ao longo dos vídeos, com um limite de 1.000 quadros por cenário; quando o cenário tinha menos quadros disponíveis que esse limite, todos foram usados. Os quadros de cada cenário foram então divididos aleatoriamente na proporção 80/20 entre treino e validação, com semente fixa, o que mantém a proporção entre as classes nos dois conjuntos. O resultado foram 1.360 imagens, 1.088 para treino e 272 para validação, distribuídas como mostra a Tabela~\ref{tab:dataset-roteamento}. \todo{Registrar quais vídeos foram usados para a base da rede de roteamento e se eles coincidem com as sessões da base de detecção.}
+A base foi montada a partir de vídeos separados por cenário. De cada cenário, foram extraídos quadros em intervalos regulares ao longo dos vídeos, com um limite de 1.000 quadros por cenário; quando o cenário tinha menos quadros disponíveis que esse limite, todos foram usados. Os quadros de cada cenário foram então divididos aleatoriamente na proporção 80/20 entre treino e validação, com semente fixa, o que mantém a proporção entre as classes nos dois conjuntos. O resultado foram 1.360 imagens, 1.088 para treino e 272 para validação, distribuídas como mostra a Tabela~\ref{tab:dataset-roteamento}.
+
+Os vídeos de origem são 17 trechos curtos, de 80 quadros (10 segundos) cada, todos gravados em 25 de abril de 2025 por apenas duas câmeras: Cam01, de perspectiva frontal (sete vídeos diurnos e um noturno), e Cam02, de perspectiva superior (seis vídeos diurnos e três noturnos). Como nenhum cenário chegou ao limite de 1.000 quadros, todos os quadros foram usados, e o número de imagens de cada classe é 80 vezes o número de vídeos do cenário. Nenhum desses vídeos pertence às sessões da base de detecção, já que as sessões das câmeras Cam01 e Cam02 na base de detecção são todas de 28 de abril. Em compensação, a rede de roteamento não viu, no treinamento, nenhuma imagem das câmeras Cam03 e Cam04, que fornecem a maior parte da base de detecção e todos os vídeos de teste (Seção~\ref{subsec:videos-teste}). A classe Frontal Noite, em particular, vem de um único vídeo de 10 segundos da Cam01.
 
 \begin{table}[htb]
 \centering
@@ -312,7 +314,6 @@ A arquitetura integrada combina a rede de roteamento e os quatro especialistas e
 
 Fonte: Elaborada pelo autor.
 \end{figure}
-\todo{Corrigir o rótulo do especialista 4 na figura: está escrito ``superior - dia'', o correto é ``superior - noite''.}
 
 O \textit{pipeline} recebe um vídeo e executa os seguintes passos:
 \begin{enumerate}
@@ -325,13 +326,13 @@ O \textit{pipeline} recebe um vídeo e executa os seguintes passos:
 
 O roteamento é feito uma única vez por vídeo, no primeiro quadro. Essa escolha parte do fato de que as câmeras são fixas: a perspectiva de um vídeo nunca muda, e a iluminação de uma sessão curta normalmente também não. Com isso, a rede de roteamento é executada uma vez, e o custo por quadro é o de um único YOLOv8m, igual ao do baseline. Em contrapartida, um erro de roteamento no primeiro quadro compromete o vídeo inteiro, e uma sessão que atravessasse o amanhecer ou o anoitecer continuaria a ser processada pelo especialista escolhido no início. O roteamento quadro a quadro, ou em intervalos regulares, eliminaria essa limitação ao custo de executar a rede de roteamento mais vezes.
 
-\section{Avaliação em Vídeos de Teste Independentes}
+\section{Avaliação em Vídeos de Teste}
 \label{sec:avaliacao-videos}
 
 \subsection{Vídeos de Teste e Verificação de Vazamento}
 \label{subsec:videos-teste}
 
-Além da validação cruzada, as duas abordagens foram avaliadas em quatro vídeos de teste, um por cenário, com 80 quadros cada (10 segundos a 8 FPS). Esses vídeos foram gravados na mesma baia e não fazem parte de nenhuma das sessões usadas no treinamento.
+Além da validação cruzada, as duas abordagens foram avaliadas em quatro vídeos de teste, um por cenário, com 80 quadros cada (10 segundos a 8 FPS). Esses vídeos foram gravados na mesma baia. Os vídeos Frontal Dia e Frontal Noite vêm da câmera Cam03, e os vídeos Superior Dia e Superior Noite, da câmera Cam04.
 
 Como os arquivos de teste não traziam metadados de data e hora nem seguiam o padrão de nome das sessões, foi preciso confirmar que nenhum deles era um recorte de uma sessão de treino. A verificação teve duas etapas. Na primeira, a data indicada no nome de cada vídeo foi comparada com as datas das sessões de treino. Essa comparação serve apenas como indício, pois várias sessões de câmeras diferentes podem ter a mesma data. Na segunda etapa, que é a decisiva, foram amostrados 12 quadros de cada vídeo de teste e comparados com as imagens de treino das sessões candidatas (as de mesma data ou, se nenhuma data coincidisse, todas as sessões). A comparação usou primeiro um \textit{hash} médio (\textit{average hash}) de 8$\times$8 bits, que descarta rapidamente pares muito diferentes: só seguiram para a etapa seguinte os pares com distância de Hamming de no máximo 12 bits. Os pares restantes foram comparados pelo erro quadrático médio (\textit{mean squared error}, MSE) entre os pixels das duas imagens, redimensionadas para 160$\times$160 pixels:
 \begin{equation}
@@ -340,7 +341,7 @@ Como os arquivos de teste não traziam metadados de data e hora nem seguiam o pa
 \end{equation}
 em que $I_k$ e $J_k$ são os valores do $k$-ésimo pixel e canal das duas imagens, e $N$ é o número total de valores.
 
-O limiar de decisão foi calibrado na própria base. O MSE de uma imagem com ela mesma é zero, e o MSE entre dois quadros diferentes de uma mesma sessão de treino ficou entre cerca de 750 e 1.200, já que os animais se movem entre um quadro e outro. Um quadro de teste foi considerado duplicata de um quadro de treino apenas se o menor MSE encontrado fosse de no máximo 60, valor compatível com a diferença causada por uma nova compressão do mesmo quadro, e não com a de duas cenas parecidas. Os resultados dessa verificação são apresentados no Capítulo~5.
+O limiar de decisão foi calibrado na própria base. O MSE de uma imagem com ela mesma é zero, e o MSE entre dois quadros diferentes de uma mesma sessão de treino ficou entre cerca de 750 e 1.200, já que os animais se movem entre um quadro e outro. Um quadro de teste foi considerado duplicata de um quadro de treino apenas se o menor MSE encontrado fosse de no máximo 60, valor compatível com a diferença causada por uma nova compressão do mesmo quadro, e não com a de duas cenas parecidas. Como o pré-filtro por \textit{hash} pode descartar pares que, comparados pelo MSE, seriam próximos, a verificação foi repetida de forma exaustiva: todos os 80 quadros de cada vídeo de teste foram comparados, pelo MSE, com todas as imagens da base de detecção vindas da mesma câmera. Além disso, a câmera, a data e a hora gravadas na própria imagem pelo sistema de gravação foram lidas no primeiro quadro de cada vídeo de teste e comparadas com o intervalo de tempo coberto por cada sessão da base, obtido da mesma marcação no primeiro e no último quadro da sessão. Os resultados dessa verificação são apresentados no Capítulo~5.
 
 \subsection{Protocolo de Inferência e Métrica de Contagem}
 \label{subsec:metrica-contagem}

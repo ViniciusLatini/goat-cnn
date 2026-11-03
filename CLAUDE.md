@@ -14,7 +14,9 @@ Documento-mestre do repositório. Consolida o histórico completo do projeto, on
 ```text
 /home/vini/tcc/
 ├── CLAUDE.md               # [ESTE ARQUIVO]
-├── documentacao_tcc/       # >>> TEXTO DO TCC (monografia) — é aqui que se escreve <<<
+├── monografia/             # >>> TEXTO DO TCC (monografia, abnTeX/monografia.cls) — é aqui que se escreve <<<
+│                           #     modelo.tex + capitulo1..6-*.tex, referencias.bib, figs/
+├── documentacao_tcc/       # versão ANTIGA do texto (template SBC) — não usar mais
 │   └── Template_SBC/
 │       ├── common.tex                  # macros de revisão: \entra, \sai, \rever, \todo, \etal
 │       ├── sbc_template.{odt,pdf}      # template SBC original (referência)
@@ -63,11 +65,17 @@ Ambiente: conda `tcc` (`/home/vini/miniconda3/envs/tcc/bin/python`), GPU NVIDIA 
 
 | Cenário | Câmeras | Sessões | Imagens | Caixas | Caixas/img |
 |---|---|---:|---:|---:|---:|
-| Frontal Dia | Cam01, Cam03 | 8 | 2.022 | 16.185 | 8,01 |
-| Frontal Noite | Cam03 | 13 | 2.001 | 16.008 | 8,00 |
-| Superior Dia | Cam02, Cam04 | 6 | 2.549 | 18.258 | 7,16 |
+| Frontal Dia | Cam01, Cam03 | 8 | 2.022 | 16.185 | 8,00 |
+| Frontal Noite | Cam03 | 13 | 2.001 | 16.009 | 8,00 |
+| Superior Dia | Cam02, Cam04 | 6 | 2.549 | 20.384 | 8,00 |
 | Superior Noite | Cam02, Cam04 | 9 | 2.032 | 16.254 | 8,00 |
-| **Total** | Cam01–Cam04 | **36** | **8.604** | **66.705** | 7,75 |
+| **Total** | Cam01–Cam04 | **36** | **8.604** | **68.832** | 8,00 |
+
+**Correção (2026-11-03):** os valores antigos 66.705 / 18.258 / 7,16 vinham de `wc -l`, que perde uma caixa em cada label sem `\n` final (2.126 arquivos em `ds_sup_dia`, 1 em `ds_front_noite`). 8.555/8.604 imagens (99,4%) têm exatamente 8 caixas. O artigo (`v2/artigo/main_revisado.tex`) ainda usa os números antigos.
+
+**Dataset no disco:** partição `/dev/sda4` (montar com `udisksctl mount -b /dev/sda4 -o ro` → `/run/media/vini/061a1dd7-8e19-49bb-a45c-87c4603733ea/vini/`): `ds/ds_*` (especialistas), `ds-overall-raw` (baseline), `occlusion/videos/class_*` (17 vídeos de 80 quadros usados na gating, todos de 25/04, só Cam01/Cam02).
+
+**Subamostragem:** sessões novas (`-frame_N`) não são contínuas a 8 FPS: ex. `Cam03_2025_04_26_18_17_10` tem 140 quadros entre 18:17:10 e 19:16:40 (~1 a cada 26 s); sessões Cam04 de 26/04 cobrem ~1 h cada.
 
 ### 3.3 Dataset da gating network
 1.360 imagens, divisão estratificada 80/20 → 1.088 treino / 272 validação.
@@ -93,9 +101,9 @@ YOLOv8m (pré-treino COCO), 300 épocas máx., `patience=30`, `imgsz=640`, `batc
 
 **Baseline monolítico (média dos 5 folds):** P 0,9948 · R 0,9957 · F1 0,9953 · mAP50 0,9948 · mAP50-95 0,8773 (melhor fold: 3, mAP50-95 0,8965).
 
-**Gating:** P = R = F1 = 1,00 nas 272 imagens de validação. Oclusão (Captum; Zeiler & Fergus) mostra foco em paredes e cercado da baia (contexto), não nos animais.
+**Gating:** P = R = F1 = 1,00 nas 272 imagens de validação (base só com Cam01/Cam02; nunca viu Cam03/Cam04). Oclusão (Captum; Zeiler & Fergus) mostra foco em paredes e cercado da baia (contexto), não nos animais.
 
-**Vídeos de teste independentes** (4 vídeos × 80 frames; sem vazamento confirmado por aHash+MSE; `conf=0,7`, `iou=0,7`; esperado 8×80 = 640 caixas):
+**Vídeos de teste** (4 vídeos × 80 frames; Frontal Noite pertence a uma sessão de treino — ver abaixo; `conf=0,7`, `iou=0,7`; esperado 8×80 = 640 caixas):
 
 | Cenário | Baseline | MoE | Esperado |
 |---|---:|---:|---:|
@@ -106,13 +114,19 @@ YOLOv8m (pré-treino COCO), 300 épocas máx., `patience=30`, `imgsz=640`, `batc
 
 Baseline: subdetecção em Superior Dia (5–7 caixas/frame, nunca 8); sobredetecção em Superior Noite (26/80 frames com >8, até 10) e Frontal Noite (4/80), caixas duplicadas com IoU até 0,64 < limiar NMS 0,7. MoE: confiança das 2.560 caixas entre 0,74 e 0,96 (média 0,91). Roteamento correto nos 4 vídeos (confiança da CNN: 99,32% / **62,67%** frontal-noite / 99,38% / 99,99%).
 
+**Especialistas na época de maior aptidão (= mAP50-95; pesos salvos), fold do pipeline:** FD f2 ep102 0,9068 · FN f3 ep52 0,8875 · SD f4 ep92 0,8738 · SN f5 ep58 0,8706. Médias 5 folds: 0,9017 / 0,8835 / 0,8421 / 0,8968. Parada sempre = aptidão + 30.
+
+**Comparação cenário a cenário (2026-11-03; baseline best.pt avaliado no subconjunto de val de cada cenário — val do baseline = união exata das vals dos especialistas):** mAP50-95 especialista vs baseline: FD 0,9017 vs 0,9061 · FN 0,8835 vs 0,8859 · SD 0,8421 vs 0,8477 · SN 0,8968 vs 0,9101. Baseline levemente melhor nos 4 cenários (17/20 pares).
+
+**Vídeos de teste (carimbo na imagem):** FD Cam03 04/05 14:10 · FN Cam03 26/04 18:40 · SD Cam04 29/04 12:50 · SN Cam04 26/04 20:45. **FN pertence à sessão `Cam03_2025_04_26_18_17_10`** (MSE 11,9 com o quadro 54, 4 s depois); no fold 3 (pesos usados por MoE e baseline) o treino mais próximo é o quadro 40, ~6 min antes, MSE 85,2. Os outros 3 vídeos: sem vazamento (busca exaustiva). Gating no FN: 62,7% FN / 31,4% SN / 5,2% FD, baixo em todos os 80 quadros (58,5–62,7%).
+
 **Mensagem honesta que o TCC deve sustentar:** o MoE **não** supera o baseline em mAP agregado (ambos saturam mAP50 ≈ 0,995; mAP50-95 próximos). O ganho está em **estabilidade da contagem em vídeo**, **modularidade/escalabilidade**, **isolamento de falhas** e **interpretabilidade do roteamento**.
 
 ---
 
 ## 4. Texto do TCC — estado e diretrizes
 
-**Arquivo:** `documentacao_tcc/Template_SBC/template-latex/sbc-template.tex` (classe `article` + `sbc-template.sty`; "capítulos" = `\section`). Compilado a partir de `documentacao_tcc/` (há caminhos como `Template_SBC/common` e `Template_SBC/template-latex/images/...`), provavelmente no Overleaf.
+**Arquivo atual:** `monografia/modelo.tex` + `monografia/capitulo{1..6}-*.tex` (classe `monografia.cls`, capítulos = `\chapter`, bib em `referencias.bib`, figuras em `monografia/figs/`). Compila com `pdflatex`/`bibtex`. Capítulos 1–6 já escritos ("monografia v0"). O texto antigo em `documentacao_tcc/` (template SBC) está obsoleto; as pendências abaixo sobre título/inputenc/figuras referem-se a ele.
 
 **Estrutura planejada (anunciada na seção "Organização do Trabalho" do cap. 1):**
 1. Introdução — **ESCRITO (2026-09-24)**: contextualização, motivação/problema, proposta, objetivos (geral + específicos), justificativa, escopo e delimitação, contribuições, organização. As antigas seções "Objetivos" e "Justificativa" foram incorporadas ao capítulo.
@@ -135,4 +149,4 @@ Baseline: subdetecção em Superior Dia (5–7 caixas/frame, nunca 8); sobredete
 - Título e resumo ainda falam em "detecção e classificação" → alinhar ao artigo ("…detecção de caprinos em ambiente confinado").
 - Preâmbulo carrega `\usepackage[utf8]{inputenc}` **e** `\usepackage[latin1]{inputenc}`; o arquivo é UTF-8 → remover a linha `latin1`.
 - Figuras referenciadas (`sheep-test.png`, `tutorial_p*.jpg`, `loss-200.png`, `map50_k-fold.png`…) não estão em `images/` localmente; as figuras finais estão em `v2/artigo/figures/`.
-- Investigar a confiança baixa (62,67%) da gating no vídeo frontal-noite antes de discutir.
+- Pendências restantes na monografia: confirmar critérios do EasyLabel com a UFSJ (cap. 4); rever a frase "sem subamostragem" (cap. 4, \todo com evidências).
