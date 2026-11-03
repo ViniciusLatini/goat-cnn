@@ -1,0 +1,56 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%--------------CAPÍTULO 1 - INTRODUÇÃO-----------------------
+%
+%
+\chapter{Introdução}
+\label{cap:introducao}
+
+Sistemas de Visão Computacional (VC) e Inteligência Artificial (IA) têm sido cada vez mais usados na agricultura e na produção animal \cite{kamilaris2018deep}. As aplicações vão da inspeção de qualidade \cite{industrial_quality_cv_2024} e do monitoramento de cultivos \cite{vit_precision_agriculture_2025} à análise de comportamento animal \cite{animalformer_2024} e à automação de processos \cite{kang2025bokchoy_cv_iot}. Boa parte desse interesse vem do fato de que câmeras e modelos de aprendizado de máquina permitem acompanhar plantas e animais sem contato físico e a um custo relativamente baixo.
+
+Na produção animal, essa abordagem recebe o nome de Zootecnia de Precisão (\textit{Precision Livestock Farming}, PLF). A ideia é monitorar os animais de forma contínua e automática, de modo que o produtor e o pesquisador recebam a informação a tempo de agir \cite{berckmans2014plf}. Garantir o bem-estar de um rebanho exige verificar com frequência se o ambiente, a alimentação e a água estão adequados, e essa observação consome muitas horas de trabalho humano. Ao mesmo tempo, consumidores passaram a exigir mais qualidade dos produtos de origem animal, o que aumenta a pressão por métodos de monitoramento melhores \cite{dominiak2019, nasirahmadi2017, halachmi2019}. Sensores, grandes volumes de dados e aprendizado de máquina já permitem coletar e interpretar parte dessas informações automaticamente \cite{neethirajan2020sensors}, e vários estudos mostraram que é viável monitorar o comportamento animal dessa forma, muitas vezes associando-o a medidas fisiológicas \cite{halachmi2019, fogarty2018, rohan2023deep_livestock_survey}.
+
+Entre os sensores disponíveis, as câmeras de vídeo têm duas vantagens: não exigem nenhum dispositivo preso ao corpo do animal, e uma única câmera observa vários indivíduos ao mesmo tempo \cite{nasirahmadi2017}. Quase todo sistema de monitoramento por vídeo começa pela detecção dos animais, isto é, pela localização de cada indivíduo na imagem por meio de uma caixa delimitadora (\textit{bounding box}). A contagem do rebanho, o rastreamento de cada animal ao longo do tempo e a classificação de comportamentos (alimentação, ócio, deslocamento, interação) dependem dessa saída. Se o detector erra, o erro passa adiante para todas as etapas seguintes.
+
+Na Universidade Federal de São João del-Rei (UFSJ), essa abordagem é explorada no projeto interdisciplinar ``Inteligência artificial aplicada à detecção e classificação comportamental de cabras em confinamento (raça \textit{Saanen})'', que reúne docentes e discentes dos cursos de Zootecnia e Ciência da Computação da UFSJ, em parceria com a Universidade Federal de Juiz de Fora (UFJF). No projeto, um rebanho de oito cabras da raça \textit{Saanen} vive em uma baia experimental monitorada por quatro câmeras fixas. As câmeras registram os animais de duas perspectivas, frontal e superior (zenital), e em duas condições de iluminação: diurna, com luz natural, e noturna, com imagem em infravermelho. Este trabalho corresponde ao módulo de detecção desse projeto e serve de base para as etapas de análise comportamental que virão depois.
+
+Levar esses sistemas para um confinamento real traz dificuldades que não aparecem em bases de dados de propósito geral. A primeira é que não existem modelos prontos para a espécie. Detectores modernos, como os da família YOLO (\textit{You Only Look Once}) \cite{redmon2016yolo, jocher2023yolov8}, são distribuídos com pesos pré-treinados em bases como o COCO (\textit{Common Objects in Context}) \cite{journals/corr/LinMBHPRDZ14}, que não têm uma classe para caprinos. Nos testes preliminares deste trabalho, modelos pré-treinados que usavam a classe morfologicamente mais próxima tiveram desempenho insatisfatório nas perspectivas e iluminações da baia experimental; esse resultado é apresentado no Capítulo~4 como ponto de partida da solução. Ficou claro que seria preciso construir uma base de imagens rotuladas e treinar detectores para o domínio. Essa construção é cara: envolve extrair quadros dos vídeos, anotar à mão dezenas de milhares de caixas delimitadoras e organizar os dados no formato que os modelos exigem.
+
+A segunda dificuldade é a variação nas condições de captura. Uma cabra vista de frente tem aparência muito diferente da mesma cabra vista de cima, e as imagens noturnas em infravermelho são monocromáticas, com contraste e textura diferentes das imagens diurnas coloridas. Na vista superior, os animais aparecem menores e costumam se agrupar em torno do cocho, ocultando parcialmente uns aos outros. Um único detector treinado com todas essas condições precisa acomodar, no mesmo conjunto de parâmetros, distribuições visuais bem distintas, e isso pode aparecer como detecções perdidas em um cenário e detecções duplicadas em outro.
+
+A terceira dificuldade é metodológica e está na avaliação dos modelos. As imagens são quadros extraídos de vídeos contínuos, e quadros vizinhos de uma mesma gravação são quase idênticos. Se o particionamento entre treino e validação ignora essa dependência temporal, o modelo acaba avaliado sobre amostras muito parecidas com as que viu no treino. Esse problema é conhecido como vazamento de dados (\textit{data leakage}) \cite{kaufman2012leakage}, e as métricas obtidas nessas condições medem em parte a memorização do modelo, e não apenas sua capacidade de generalizar. Dados com estrutura temporal pedem estratégias de particionamento que levem essa estrutura em conta \cite{roberts2017crossvalidation}.
+
+Este trabalho procura responder à seguinte pergunta: \textit{é possível detectar caprinos de forma robusta em um confinamento sujeito a variações de perspectiva e iluminação, avaliando os modelos sob um protocolo que reduza o vazamento temporal causado pela extração de quadros de vídeo?}
+
+\section{Justificativa}
+\label{sec:justificativa}
+
+Observar um rebanho continuamente é uma tarefa repetitiva e demorada, sujeita à fadiga do observador, e fica ainda mais difícil à noite. Um detector confiável reduz esse esforço manual e é o componente sobre o qual se constroem as análises previstas no projeto, como a contagem, o rastreamento e a classificação comportamental dos animais.
+
+Do ponto de vista científico, o trabalho contribui com uma base de imagens de caprinos anotada e organizada por condição de captura. Esse tipo de recurso é escasso, já que a literatura se concentra em bovinos e suínos \cite{nasirahmadi2017, rohan2023deep_livestock_survey}. O trabalho também propõe um protocolo de avaliação que trata explicitamente o vazamento temporal, problema comum em estudos que usam quadros extraídos de vídeo. Por fim, investiga se tratar a variação de perspectiva e iluminação por meio de especialização por contexto traz vantagens em relação a um detector único. A pergunta interessa a aplicações em que as condições de captura mudam de forma previsível, como câmeras fixas que operam dia e noite.
+
+Do ponto de vista prático, uma solução organizada por condição de captura é mais fácil de manter e de estender a novos cenários, como uma nova câmera ou uma nova baia. O trabalho também se relaciona com a Agenda 2030 da Organização das Nações Unidas, em especial com os Objetivos de Desenvolvimento Sustentável 2 (Fome Zero e Agricultura Sustentável), 9 (Indústria, Inovação e Infraestrutura) e 12 (Consumo e Produção Responsáveis), ao propor uma ferramenta de monitoramento de caprinos voltada ao bem-estar animal e à produção sustentável.
+
+\section{Objetivos}
+\label{sec:objetivos}
+
+\subsection*{Objetivo geral}
+
+Desenvolver e avaliar uma solução de detecção automática de caprinos da raça \textit{Saanen} em confinamento, capaz de lidar com variações de perspectiva (frontal e superior) e de iluminação (diurna e noturna), usando um protocolo de avaliação que reduza o vazamento de dados causado pela extração de quadros de vídeo.
+
+\subsection*{Objetivos específicos}
+
+\begin{enumerate}
+    \renewcommand{\labelenumi}{\roman{enumi}.}
+    \item Construir e caracterizar uma base de imagens rotuladas com a classe única \texttt{goat}, a partir de vídeos gravados em ambiente experimental de confinamento, cobrindo os cenários resultantes da combinação de perspectiva e iluminação;
+    \item Definir um protocolo de validação que reduza o vazamento de dados causado pela correlação temporal entre quadros consecutivos de vídeo;
+    \item Treinar e avaliar detectores de objetos para identificar caprinos nos cenários de captura considerados;
+    \item Investigar uma estratégia de identificação automática do cenário de captura e analisar a interpretabilidade de suas decisões;
+    \item Integrar os componentes desenvolvidos em um único \textit{pipeline} de inferência sobre vídeo;
+    \item Comparar a abordagem proposta com uma alternativa de detecção não especializada, tanto por métricas agregadas de detecção quanto pela estabilidade da contagem de animais em vídeos de teste independentes.
+\end{enumerate}
+
+\section{Organização do Trabalho}
+\label{sec:organizacao}
+
+O Capítulo~2 apresenta a fundamentação teórica: redes neurais convolucionais, detecção de objetos e a família YOLO, a arquitetura EfficientNet, o paradigma de Mistura de Especialistas, as métricas de avaliação de detectores, a validação cruzada e o vazamento de dados, e a explicabilidade por oclusão. O Capítulo~3 discute trabalhos relacionados ao uso de visão computacional na pecuária de precisão, com ênfase na detecção de pequenos ruminantes. O Capítulo~4 descreve os materiais e métodos: a aquisição dos vídeos, a construção e a caracterização da base de imagens, o protocolo de validação por blocos temporais, a configuração dos modelos e a arquitetura MoE proposta. O Capítulo~5 apresenta e discute os resultados, da prova de conceito inicial à comparação entre a arquitetura proposta e o baseline monolítico. O Capítulo~6 traz as conclusões, as limitações do trabalho e as propostas de trabalhos futuros.

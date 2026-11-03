@@ -1,0 +1,161 @@
+\NeedsTeXFormat{LaTeX2e}
+%-----------------------------------------------------------
+\documentclass[a4paper,12pt]{monografia}
+\usepackage[portuguese, colorinlistoftodos, textsize=tiny]{todonotes}
+\usepackage{amsmath,amsthm,amsfonts,amssymb}
+\usepackage[mathcal]{eucal}
+\usepackage{latexsym}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{setspace}
+%\usepackage{natbib}
+\usepackage{bm}
+\usepackage[portuguese,algoruled,longend, linesnumbered]{algorithm2e}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\hypersetup{colorlinks,
+  debug=false,
+  linkcolor=black,  %%% cor do tableofcontents, \ref, \footnote, etc
+  citecolor=black,  %%% cor do \cite
+  urlcolor=black,   %%% cor do \url e \href
+  bookmarksopen=true,
+}
+\usepackage[alf,bibjustif]{abntex2cite}
+
+\newcounter{todocounter}
+\newcommand{\comment}[2][]
+{\stepcounter{todocounter}\todo[caption={\thetodocounter: #2}, #1]
+  {
+    \begin{spacing}{1}\thetodocounter: #2
+\end{spacing}}}
+\reversemarginpar
+\setlength{\marginparwidth}{2.5cm}
+\lstloadlanguages{C}
+%-----------------------------------------------------------
+%-----------------------------------------------------------
+\theoremstyle{plain}
+\newtheorem{theorem}{Teorema}[section]
+\newtheorem{axiom}{Axioma}[section]
+\newtheorem{corollary}{Corolário}[section]
+\newtheorem{lemma}{Lema}[section]
+\newtheorem{proposition}{Proposição}[section]
+%-----------------------------------------------------------
+\theoremstyle{definition}
+\newtheorem{definition}{Definição}[section]
+\newtheorem{example}{Exemplo}[section]
+%-----------------------------------------------------------
+\theoremstyle{remark}
+\newtheorem{remark}{Observação}[section]
+%-----------------------------------------------------------
+%-----------------------------------------------------------
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\K}{\mathbb{K}}
+\newcommand{\I}{\mathbb{I}}
+\newcommand{\id}{\mathbf{1}}
+\newcommand{\U}{\mathcal{U}}
+\newcommand{\V}{{\cal V}}
+%-----------------------------------------------------------
+\def\ind{\hbox{ ind }}
+%-----------------------------------------------------------
+\include{hifenizacao}
+
+\begin{document}
+\include{pretexto}
+
+%----------------------------dedicatória  opcional--------------
+\begin{dedicatoria}
+  Aos meus amigos e irmãos.\\
+  Aos pais, pelo apoio e sustento.\\
+\end{dedicatoria}
+
+%--------Digite aqui o seu resumo em Português--------------
+\resumo{Resumo}
+O presente trabalho propõe o desenvolvimento de um sistema de baixo custo baseado em Visão Computacional e Inteligência Artificial para detecção e classificação de cabras da raça \textit{Saanen} em confinamento. A iniciativa proposta integra conhecimentos das áreas de Ciência da Computação e Zootecnia, utilizando vídeos capturados em ambientes experimentais para a construção de um banco de imagens rotuladas. Modelos de aprendizado de máquina serão treinados para identificar os caprinos e comparar essas predições com os resultados anotados previamente. Dessa forma, espera-se construir uma ferramenta que possa auxiliar tanto na detecção quanto na classificação desses animais.
+
+\noindent \\ \textbf{Palavras-chave:} Visão Computacional, Inteligência Artificial, Aprendizado de Máquina, Detecção de Objetos, Caprinos \textit{Saanen}, Pecuária de Precisão.
+
+%-----------Digite aqui o seu resumo em Inglês--------------
+\resumo{Abstract} This work proposes the development of a low-cost system based on Computer Vision and Artificial Intelligence for the detection and classification of \textit{Saanen} goats in confinement. The proposed initiative combines knowledge from Computer Science and Animal Science, using videos captured in experimental environments to build a labeled image dataset. Machine learning models will be trained to identify the goats, and their predictions will be compared with previously annotated results. In this way, the goal is to build a tool that can support both the detection and the classification of these animals.
+
+\noindent \\ \textbf{Keywords:} Computer Vision, Artificial Intelligence, Machine Learning, Object Detection, \textit{Saanen} Goats, Precision Livestock Farming.
+
+%-----------Ou digite aqui o seu resumo em Frances----------
+%\resumo{Resumo} C'est un modúle de la monographie dans \LaTeX et
+%5utilise la classe monografia.cls, avec le but de aider dans le
+%maniement des travaux de conclusion des plusieurs cours de
+%l'Université Fédérale de Juiz de Fora.
+
+%-----------------------------------------------------------
+\agradecimento{Agradecimentos} \indent\indent
+A todos os meus parentes, pelo encorajamento e
+apoio.
+
+Ao professor Beltrano pela orientação, amizade e
+principalmente, pela paciência, sem a qual este trabalho não se
+realizaria.
+
+Aos professores do Departamento de Ciência da Computação pelos seus
+ensinamentos e aos funcionários do curso, que durante esses anos,
+contribuíram de algum modo para o nosso enriquecimento pessoal e
+profissional.
+\newpage
+
+%---------------------- EPÍGRAFE I (OPCIONAL)--------------
+\begin{epigrafe}
+  ``Lembra que o sono é sagrado e alimenta de horizontes o tempo acordado de viver''.\\
+  \hfill Beto Guedes (Amor de Índio)
+\end{epigrafe}
+
+%----Sumário, lista de figura e de tabela ------------
+\tableofcontents \thispagestyle{empty} \listoffigures
+\thispagestyle{empty} \listoftables \thispagestyle{empty}
+
+%----Glossário ------------
+\chapter*{Lista de Abreviações} \addcontentsline{toc}{chapter}{Lista de Abreviações}
+\doublespacing
+\begin{tabular}{l l}
+
+  AP & \textit{Average Precision} (Precisão Média) \\
+  CNN & \textit{Convolutional Neural Network} (Rede Neural Convolucional) \\
+  COCO & \textit{Common Objects in Context} \\
+  FN & Falso Negativo \\
+  FP & Falso Positivo \\
+  IA & Inteligência Artificial \\
+  IoU & \textit{Intersection over Union} (Intersecção sobre União) \\
+  mAP & \textit{mean Average Precision} (Precisão Média Média) \\
+  MoE & \textit{Mixture of Experts} (Mistura de Especialistas) \\
+  PLF & \textit{Precision Livestock Farming} \\
+  UFJF & Universidade Federal de Juiz de Fora \\
+  UFSJ & Universidade Federal de São João del-Rei \\
+  VC & Visão Computacional \\
+  VP & Verdadeiro Positivo \\
+  YOLO & \textit{You Only Look Once} \\
+
+\end{tabular}  \thispagestyle{empty}
+%---------------------
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%--------------Início do Conteúdo---------------------------
+%
+%
+\pagestyle{ruledheader}
+\include{capitulo1-introducao}
+\include{capitulo2-fundamentacao}
+\include{capitulo3-trabalhos-relacionados}
+\include{capitulo4-materiais-metodos}
+\include{capitulo5-resultados}
+\include{capitulo6-conclusao}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\singlespacing
+\bibliographystyle{abntex2-alf}
+\bibliography{referencias}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\end{document}

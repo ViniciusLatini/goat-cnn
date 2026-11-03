@@ -1,0 +1,59 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%--------------CAPÍTULO 6 - CONCLUSÃO-----------------------
+%
+%
+\chapter{Conclusão}
+\label{cap:conclusao}
+
+Este trabalho investigou a detecção automática de caprinos da raça \textit{Saanen} em uma baia de confinamento monitorada por câmeras fixas, sob duas perspectivas (frontal e superior) e duas condições de iluminação (diurna e noturna, em infravermelho). Para lidar com essa variação, foi proposta uma arquitetura de Mistura de Especialistas em que uma rede de roteamento baseada na EfficientNet-B0 identifica o cenário de captura no primeiro quadro do vídeo e seleciona um de quatro detectores YOLOv8m, cada um treinado com as imagens de um único cenário. A arquitetura foi comparada com um baseline monolítico, um único YOLOv8m treinado com a união das imagens dos quatro cenários, sob o mesmo protocolo de validação.
+
+\section{Síntese dos Resultados}
+\label{sec:sintese-resultados}
+
+A pergunta de pesquisa apresentada no Capítulo~\ref{cap:introducao} foi se seria possível detectar caprinos de forma robusta em um confinamento sujeito a variações de perspectiva e iluminação, avaliando os modelos sob um protocolo que reduzisse o vazamento temporal. Os resultados indicam que sim, com as ressalvas discutidas na Seção~\ref{sec:limitacoes}. A seguir, retoma-se cada objetivo específico.
+
+O primeiro objetivo era construir e caracterizar uma base de imagens rotuladas. A base final reúne 8.604 imagens e 66.705 caixas delimitadoras da classe \texttt{goat}, extraídas de 36 sessões de gravação em sete dias, e está organizada pelos quatro cenários de captura, com tamanhos parecidos entre eles (de 2.001 a 2.549 imagens). Cada imagem preserva a câmera, a sessão e a posição do quadro na gravação, informação que tornou possível o protocolo de validação adotado.
+
+O segundo objetivo era definir um protocolo de validação que reduzisse o vazamento temporal. O protocolo de validação cruzada por blocos temporais divide cada sessão em cinco trechos contíguos e exclui do treino as 15 imagens vizinhas de cada borda do bloco de validação. A auditoria confirmou que nenhuma imagem aparece ao mesmo tempo em treino e validação, e a zona de exclusão removeu 4.234 amostras somando os cinco \textit{folds}. O protocolo substituiu o particionamento aleatório das primeiras rodadas de experimentos, cujas métricas estavam infladas pela presença de quadros quase idênticos em treino e validação.
+
+O terceiro objetivo era treinar e avaliar detectores para os cenários considerados. Os quatro especialistas atingiram mAP50 de 0,9950 e precisão, revocação e F1-\textit{score} acima de 0,99. No mAP50-95, os especialistas frontais tiveram os maiores valores (0,9015 em Frontal Dia e 0,8821 em Frontal Noite) e os superiores, os menores (0,8645 em Superior Dia e 0,8338 em Superior Noite), o que aponta a perspectiva superior, em que os animais aparecem agrupados e encostados, como a mais difícil para o ajuste fino das caixas.
+
+O quarto objetivo era investigar a identificação automática do cenário e a interpretabilidade dessa decisão. A rede de roteamento acertou todas as 272 imagens de validação e escolheu o cenário correto nos quatro vídeos de teste. Os mapas de oclusão mostraram que, nos cenários frontais, a decisão se apoia sobretudo na estrutura da baia, como paredes e grades, enquanto em Superior Noite os animais também pesam na decisão. No vídeo Frontal Noite, a confiança do roteamento foi de 62,67\%, bem abaixo dos demais vídeos, o que mostra que a margem da rede em vídeos novos é menor do que o acerto total na validação sugere.
+
+O quinto objetivo era integrar os componentes em um \textit{pipeline} de inferência. O \textit{pipeline} recebe um vídeo, classifica o primeiro quadro, carrega o especialista correspondente e processa todos os quadros, registrando o cenário identificado, a confiança do roteamento e as detecções. Como a rede de roteamento é executada uma vez por vídeo, o custo por quadro é o de um único YOLOv8m, o mesmo do baseline.
+
+O sexto objetivo era comparar a abordagem proposta com um detector não especializado. Nas métricas de validação cruzada, as duas abordagens tiveram desempenho muito próximo: o baseline também satura o mAP50 e tem mAP50-95 médio de 0,8773, e seu melhor \textit{fold} supera três dos quatro especialistas nessa métrica. A arquitetura MoE, portanto, não se mostrou superior nas métricas agregadas. A diferença apareceu na contagem de animais nos vídeos de teste independentes: a arquitetura MoE detectou exatamente os oito animais em todos os 320 quadros, enquanto o baseline errou a contagem nos quatro cenários, com subdetecção nos vídeos diurnos (até 108 caixas a menos em Superior Dia) e caixas duplicadas sobre um mesmo animal nos noturnos (26 dos 80 quadros com mais de oito caixas em Superior Noite).
+
+Em conjunto, os resultados indicam que a vantagem da especialização por cenário, neste problema, não está no mAP, mas na estabilidade do detector em vídeos novos, além das propriedades estruturais da arquitetura modular: a possibilidade de incluir novos cenários sem retreinar os especialistas existentes, o isolamento das dificuldades de cada cenário em seu próprio especialista e o registro explícito de qual especialista foi usado em cada vídeo.
+
+\section{Contribuições}
+\label{sec:contribuicoes-finais}
+
+As principais contribuições deste trabalho são:
+\begin{itemize}
+    \item uma base de 8.604 imagens de caprinos \textit{Saanen} em confinamento, anotadas com 66.705 caixas e organizadas por perspectiva e iluminação, incluindo imagens noturnas em infravermelho, um tipo de dado pouco presente nas bases públicas da área;
+    \item um protocolo de validação cruzada por blocos temporais com zona de exclusão, aplicável a outros trabalhos que usam quadros extraídos de vídeo, acompanhado de uma auditoria do particionamento;
+    \item uma arquitetura de Mistura de Especialistas com roteamento por cenário de captura, com a análise da decisão de roteamento por oclusão;
+    \item uma comparação entre a arquitetura especializada e um detector único treinado sob o mesmo protocolo, que mostra que métricas agregadas de validação podem não revelar diferenças que aparecem na contagem de animais em vídeo.
+\end{itemize}
+
+\section{Limitações}
+\label{sec:limitacoes}
+
+As conclusões acima estão sujeitas a limitações discutidas ao longo dos Capítulos~4 e~5. O protocolo de validação reduz o vazamento entre quadros vizinhos, mas não separa sessões inteiras entre treino e validação, e a base da rede de roteamento foi dividida aleatoriamente por quadro. As métricas tabeladas correspondem à época de maior mAP50, e não aos pesos efetivamente salvos, e a comparação entre especialistas e baseline nas métricas agregadas não foi feita cenário a cenário. A avaliação em vídeo usou um vídeo por cenário, com 80 quadros, sem rótulos, e a verificação de vazamento do vídeo Superior Noite precisa ser refeita contra as sessões da data correta. Toda a base provém de uma única baia e de um único rebanho de oito animais, e o desempenho em outras instalações não foi avaliado. Por fim, não foram feitas medições de desempenho em equipamentos de menor capacidade computacional, de modo que este trabalho não permite afirmar a viabilidade da solução em dispositivos embarcados.
+
+\section{Trabalhos Futuros}
+\label{sec:trabalhos-futuros}
+
+As limitações apontadas sugerem uma primeira linha de trabalhos, voltada a tornar a avaliação mais rigorosa:
+\begin{itemize}
+    \item adotar um particionamento por sessão ou por dia de aquisição (\textit{Group K-Fold}) para os detectores e para a rede de roteamento, à medida que a base ganhe mais sessões por cenário;
+    \item comparar especialistas e baseline cenário a cenário, avaliando o baseline sobre a validação de cada cenário e usando, nos dois casos, os pesos efetivamente salvos;
+    \item ampliar o conjunto de teste para vários vídeos por cenário, com rótulos, de modo a medir precisão, revocação e erro de contagem quadro a quadro sobre dados independentes;
+    \item avaliar os modelos em outras baias e com outros rebanhos.
+\end{itemize}
+
+Uma segunda linha diz respeito à própria arquitetura. O roteamento pode ser tornado mais seguro classificando vários quadros do início do vídeo, ou repetindo a classificação em intervalos regulares, o que também permitiria lidar com sessões que atravessem o amanhecer ou o anoitecer. A causa da baixa confiança do roteamento no vídeo Frontal Noite deve ser investigada, e a base da rede de roteamento pode ser ampliada e balanceada, em especial nessa classe. A sobredetecção do baseline sugere ainda testar o efeito do limiar de IoU da supressão de não máximos nas duas abordagens. Também vale medir o tempo de inferência e o consumo de memória de forma controlada, inclusive em equipamentos de menor capacidade, para avaliar a viabilidade de execução junto às câmeras.
+
+Por fim, este trabalho corresponde ao módulo de detecção do projeto ``Inteligência artificial aplicada à detecção e classificação comportamental de cabras em confinamento (raça \textit{Saanen})''. As etapas seguintes do projeto partem das detecções produzidas aqui: o rastreamento de cada animal ao longo do vídeo (\textit{multi-object tracking}) e a classificação de comportamentos como alimentação, ócio e deslocamento, que permitirão usar o sistema no acompanhamento do bem-estar do rebanho.

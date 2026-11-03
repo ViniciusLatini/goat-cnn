@@ -1,0 +1,281 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%--------------CAPÍTULO 5 - RESULTADOS E DISCUSSÃO----------
+%
+%
+\chapter{Resultados e Discussão}
+\label{cap:resultados}
+
+Este capítulo apresenta os resultados na ordem em que as etapas foram executadas (Capítulo~\ref{cap:materiais-metodos}). A Seção~\ref{sec:res-poc} mostra o resultado da prova de conceito com o detector pré-treinado. A Seção~\ref{sec:res-roteamento} apresenta o treinamento da rede de roteamento e a análise de seus mapas de oclusão. As Seções~\ref{sec:res-especialistas} e~\ref{sec:res-baseline} trazem as métricas de validação cruzada dos especialistas e do baseline monolítico, e a Seção~\ref{sec:res-comparacao-metricas} compara as duas abordagens com base nessas métricas. A Seção~\ref{sec:res-videos} apresenta a avaliação nos vídeos de teste independentes, e a Seção~\ref{sec:res-discussao} discute o conjunto dos resultados e suas limitações.
+
+\section{Prova de Conceito com Detector Pré-Treinado}
+\label{sec:res-poc}
+
+A Figura~\ref{fig:poc-sheep} mostra o resultado típico do YOLOv8m pré-treinado no COCO aplicado a um quadro da câmera frontal durante o dia, com as detecções filtradas pela classe \textit{sheep}. Dos oito animais da baia principal, o modelo detectou apenas dois, com confianças de 0,27 e 0,48. Os testes com imagens noturnas e com a perspectiva superior também tiveram desempenho insatisfatório, sem que o modelo detectasse o rebanho completo.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.75\textwidth]{figs/sheep-test.png}
+\caption{Prova de conceito: YOLOv8m pré-treinado no COCO, sem ajuste, com detecções filtradas pela classe \textit{sheep}. Apenas dois dos oito animais da baia principal foram detectados.}
+\label{fig:poc-sheep}
+
+Fonte: Elaborada pelo autor.
+\end{figure}
+
+Esse desempenho era esperado. O COCO não tem caprinos, e cabras \textit{Saanen} vistas de cima ou em diagonal, através das grades de uma baia, têm aparência diferente da dos ovinos que o modelo aprendeu a reconhecer. À noite, a diferença aumenta, porque as imagens em infravermelho são monocromáticas, ao passo que o COCO é formado por fotografias coloridas. O teste confirmou que seria necessário construir uma base própria e treinar detectores para o domínio. Como teve caráter apenas exploratório, esse teste não é usado como base de comparação no restante do capítulo; esse papel cabe ao baseline monolítico (Seção~\ref{sec:res-baseline}).
+
+\section{Rede de Roteamento}
+\label{sec:res-roteamento}
+
+\subsection{Treinamento e Desempenho de Validação}
+\label{subsec:res-treino-roteamento}
+
+O treinamento da EfficientNet-B0 foi interrompido pela parada antecipada na nona época. A Figura~\ref{fig:curva-roteamento} mostra a perda de treino e de validação ao longo das épocas. A perda de validação ficou próxima de zero já a partir da segunda época e não voltou a cair o suficiente para reiniciar a contagem da paciência, o que levou à parada sete épocas depois. A perda de treino oscilou mais, com picos na quarta e na sexta épocas, efeito esperado do aumento de dados aplicado só ao treino, e também se aproximou de zero nas últimas épocas.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.5\textwidth]{figs/learning_curves.png}
+\caption{Perda de treino (\textit{Train}) e de validação (\textit{Val}) da rede de roteamento por época. A numeração das épocas no eixo horizontal começa em zero.}
+\label{fig:curva-roteamento}
+
+Fonte: Elaborada pelo autor.
+\end{figure}
+
+No conjunto de validação, com 272 imagens, a rede classificou corretamente todas as imagens dos quatro cenários: precisão, revocação e F1-\textit{score} foram iguais a 1,00 em todas as classes. A convergência rápida e o acerto total indicam que distinguir os quatro cenários é uma tarefa fácil para a rede. Isso faz sentido, já que a diferença entre perspectiva frontal e superior muda a geometria inteira da cena, e a diferença entre dia e noite muda a cor da imagem inteira.
+
+Esse resultado precisa ser lido com cautela por dois motivos já apontados na Seção~\ref{subsec:base-roteamento}. O primeiro é que a divisão entre treino e validação dessa base foi aleatória por quadro, de modo que quadros próximos de um mesmo vídeo podem estar nos dois conjuntos. O segundo é que a base é desbalanceada, e a classe Frontal Noite tem apenas 16 imagens de validação. O acerto total, portanto, não prova que a rede generalize para vídeos novos. Essa verificação é feita na Seção~\ref{subsec:res-roteamento-videos}, com os vídeos de teste independentes.
+
+\subsection{Mapas de Sensibilidade por Oclusão}
+\label{subsec:res-oclusao}
+
+A Figura~\ref{fig:oclusao} mostra os mapas de sensibilidade por oclusão de uma imagem de cada cenário, sobrepostos às imagens. As cores quentes (amarelo e vermelho) indicam as regiões cuja oclusão mais altera a saída da rede para a classe prevista, e as cores frias (azul), as regiões que pouco influenciam a decisão. A rede previu corretamente o cenário das quatro imagens.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=0.85\textwidth]{figs/occlusion_2x2_blended.png}
+\caption{Mapas de sensibilidade por oclusão da rede de roteamento, sobrepostos às imagens de entrada: (a) Frontal Dia; (b) Frontal Noite; (c) Superior Dia; (d) Superior Noite. Cores quentes indicam maior influência na decisão.}
+\label{fig:oclusao}
+
+Fonte: Elaborada pelo autor.
+\end{figure}
+
+Nos dois cenários frontais, a rede se apoiou sobretudo na estrutura da baia. Em Frontal Dia (Figura~\ref{fig:oclusao}a), as regiões mais relevantes ficam na faixa superior da imagem, sobre a parede do fundo e a parte alta das grades laterais, e quase não há relevância sobre os corpos dos animais ou sobre o cocho na parte inferior. Em Frontal Noite (Figura~\ref{fig:oclusao}b), o padrão é parecido: a região mais relevante é a grade do lado direito e a parte superior da parede, enquanto os animais aparecem em azul.
+
+Nos cenários superiores, o padrão é menos uniforme. Em Superior Dia (Figura~\ref{fig:oclusao}c), o mapa é difuso: há pontos de relevância moderada espalhados sobre o piso ripado e a borda superior da imagem, sem uma região dominante. Em Superior Noite (Figura~\ref{fig:oclusao}d), a região de maior relevância fica no centro da imagem e coincide em parte com o corpo de dois animais e com o piso entre eles. Nesse caso, a rede não se baseou apenas no cercado e nas paredes.
+
+Os mapas indicam que, na maioria dos casos, a rede usa elementos fixos da cena para reconhecer o cenário, como as paredes, as grades e o piso, que mudam de aparência entre as perspectivas e entre o dia e a noite. O caso Superior Noite mostra, porém, que os animais também podem pesar na decisão. Isso não chega a ser um problema para o roteamento, já que a aparência dos animais em infravermelho e vistos de cima também é característica do cenário, mas significa que a afirmação de que a rede ``olha apenas para o ambiente'' não vale para todos os casos. A análise cobre uma imagem por cenário e tem caráter qualitativo; uma conclusão mais geral exigiria aplicar a oclusão a um conjunto maior de imagens.
+
+\section{Detectores Especialistas}
+\label{sec:res-especialistas}
+
+A Tabela~\ref{tab:res-especialistas} apresenta, para cada especialista, as métricas do melhor \textit{fold}, escolhido pelo maior mAP50 (Seção~\ref{sec:especialistas}). A coluna ``Época'' indica a época em que esse mAP50 foi atingido.
+
+\begin{table}[htb]
+\centering
+\caption{Métricas de validação do melhor \textit{fold} de cada especialista (época de maior mAP50).}
+\label{tab:res-especialistas}
+\begin{tabular}{lccccccc}
+\hline
+\textbf{Especialista} & \textbf{Fold} & \textbf{Época} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{mAP50} & \textbf{mAP50-95} \\
+\hline
+Frontal Dia & 2 & 108 & 0,9966 & 0,9975 & 0,9971 & 0,9950 & 0,9015 \\
+Frontal Noite & 3 & 81 & 0,9972 & 0,9968 & 0,9970 & 0,9950 & 0,8821 \\
+Superior Dia & 4 & 50 & 0,9999 & 0,9995 & 0,9997 & 0,9950 & 0,8645 \\
+Superior Noite & 5 & 13 & 0,9978 & 0,9972 & 0,9975 & 0,9950 & 0,8338 \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+Fonte: Elaborada pelo autor.
+\end{table}
+
+Os quatro especialistas atingiram mAP50 de 0,9950, e a precisão, a revocação e o F1-\textit{score} ficaram acima de 0,99 em todos os casos. Com um limiar de IoU de 0,5, portanto, praticamente todos os animais dos blocos de validação foram encontrados, com pouquíssimos falsos positivos. O mAP50 de 0,9950 é, na prática, o valor máximo que essa métrica atinge na implementação usada, e todos os \textit{folds} de todos os especialistas chegaram a ele ou ficaram a uma diferença na terceira ou quarta casa decimal. Por isso, o mAP50 não diferencia os especialistas entre si, e a escolha do melhor \textit{fold} por esse critério é praticamente um desempate.
+
+A métrica mais exigente, o mAP50-95, separa os cenários. Os especialistas frontais tiveram os maiores valores (0,9015 em Frontal Dia e 0,8821 em Frontal Noite), seguidos por Superior Dia (0,8645) e Superior Noite (0,8338). A perspectiva superior, portanto, foi a mais difícil para o ajuste fino das caixas. Uma explicação plausível é que, vistos de cima, os animais ficam muito próximos uns dos outros, sobretudo junto ao cocho, e as bordas de um animal encostam nas do vizinho, o que torna mais difícil acertar a caixa com IoU alto. O mesmo padrão aparece nos dois períodos do dia: em cada perspectiva, o cenário noturno teve mAP50-95 menor que o diurno.
+
+As épocas da Tabela~\ref{tab:res-especialistas} variam bastante, de 13 em Superior Noite a 108 em Frontal Dia. Elas não devem ser lidas como uma medida da velocidade de convergência de cada especialista. Como o mAP50 satura muito cedo, a época em que ele atinge seu valor máximo depende de pequenas oscilações na quarta casa decimal. Além disso, o mAP50-95 continua a subir depois dessa época, como mostra a Seção~\ref{sec:res-baseline} para o baseline. O valor de mAP50-95 da tabela é, portanto, o daquela época específica, e tende a ser menor que o dos pesos efetivamente salvos pela biblioteca, que são escolhidos pela métrica de aptidão. \todo{Extrair, dos \texttt{results.csv} dos especialistas, as métricas na época de maior aptidão (pesos salvos), para uma tabela comparável à Tabela~\ref{tab:res-baseline-aptidao}.}
+
+\section{Baseline Monolítico}
+\label{sec:res-baseline}
+
+A Tabela~\ref{tab:res-baseline} apresenta as métricas do baseline em cada \textit{fold}, segundo o mesmo critério dos especialistas (época de maior mAP50).
+
+\begin{table}[htb]
+\centering
+\caption{Métricas de validação do baseline monolítico por \textit{fold} (época de maior mAP50).}
+\label{tab:res-baseline}
+\begin{tabular}{lcccccc}
+\hline
+\textbf{Fold} & \textbf{Época} & \textbf{P} & \textbf{R} & \textbf{F1} & \textbf{mAP50} & \textbf{mAP50-95} \\
+\hline
+1 & 96 & 0,9914 & 0,9938 & 0,9926 & 0,9944 & 0,8700 \\
+2 & 60 & 0,9945 & 0,9942 & 0,9943 & 0,9948 & 0,8707 \\
+3 & 54 & 0,9977 & 0,9986 & 0,9982 & 0,9950 & 0,8965 \\
+4 & 33 & 0,9967 & 0,9971 & 0,9969 & 0,9950 & 0,8839 \\
+5 & 25 & 0,9939 & 0,9948 & 0,9943 & 0,9949 & 0,8653 \\
+\hline
+\textbf{Média} & -- & \textbf{0,9948} & \textbf{0,9957} & \textbf{0,9953} & \textbf{0,9948} & \textbf{0,8773} \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+Fonte: Elaborada pelo autor.
+\end{table}
+
+O baseline também satura o mAP50, entre 0,9944 e 0,9950 nos cinco \textit{folds}, e tem precisão e revocação médias acima de 0,99. O mAP50-95 varia mais entre os \textit{folds}, de 0,8653 a 0,8965, com média de 0,8773. Como os \textit{folds} diferem apenas no trecho de cada sessão reservado para validação, essa variação mostra que alguns trechos das gravações são mais difíceis que outros, por exemplo por concentrarem momentos em que os animais estão agrupados.
+
+A Figura~\ref{fig:curvas-baseline} mostra a evolução do mAP50 e do mAP50-95 ao longo do treinamento dos cinco \textit{folds}. O mAP50 (Figura~\ref{fig:curvas-baseline}a) chega a cerca de 0,995 nas primeiras épocas e praticamente não muda depois disso. O mAP50-95 (Figura~\ref{fig:curvas-baseline}b) sobe rapidamente nas primeiras dezenas de épocas e continua crescendo lentamente por muito mais tempo. Os círculos vazados marcam a época de maior mAP50, usada nas Tabelas~\ref{tab:res-especialistas} e~\ref{tab:res-baseline}, e os círculos cheios marcam a época de maior aptidão, cujos pesos a biblioteca salva. Em todos os \textit{folds}, o círculo cheio fica à direita e acima do vazado.
+
+\begin{figure}[htb]
+\centering
+\includegraphics[width=\textwidth]{figs/baseline_curvas.png}
+\caption{Evolução do mAP50 (a) e do mAP50-95 (b) de validação do baseline monolítico nos cinco \textit{folds}. Em (b), os círculos vazados indicam a época de maior mAP50 e os círculos cheios, a época de maior aptidão (pesos salvos).}
+\label{fig:curvas-baseline}
+
+Fonte: Elaborada pelo autor.
+\end{figure}
+
+A Tabela~\ref{tab:res-baseline-aptidao} mostra as métricas na época de maior aptidão, junto com a época em que cada treinamento parou e sua duração. A parada ocorreu sempre 30 épocas depois da época de maior aptidão, o que confirma que a paciência foi contada sobre essa métrica. Nesse critério, o mAP50-95 médio do baseline sobe de 0,8773 para 0,8860, e o do \textit{fold} 3 chega a 0,9015. Os cinco treinamentos somaram cerca de 15 horas.
+
+\begin{table}[htb]
+\centering
+\caption{Baseline monolítico na época de maior aptidão (pesos salvos), época de parada e duração do treinamento de cada \textit{fold}.}
+\label{tab:res-baseline-aptidao}
+\footnotesize
+\begin{tabular}{lccccc}
+\hline
+\textbf{Fold} & \textbf{Época (aptidão)} & \textbf{mAP50} & \textbf{mAP50-95} & \textbf{Parada} & \textbf{Duração} \\
+\hline
+1 & 194 & 0,9944 & 0,8733 & 224 & 4 h 39 min \\
+2 & 96 & 0,9946 & 0,8745 & 126 & 2 h 29 min \\
+3 & 76 & 0,9950 & 0,9015 & 106 & 2 h 05 min \\
+4 & 109 & 0,9949 & 0,8974 & 139 & 2 h 45 min \\
+5 & 115 & 0,9947 & 0,8832 & 145 & 3 h 05 min \\
+\hline
+\textbf{Média} & -- & \textbf{0,9947} & \textbf{0,8860} & -- & \textbf{15 h 03 min} (total) \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+\normalsize
+Fonte: Elaborada pelo autor.
+\end{table}
+
+\section{Comparação entre Especialistas e Baseline nas Métricas Agregadas}
+\label{sec:res-comparacao-metricas}
+
+Nas métricas de validação cruzada, as duas abordagens têm desempenho muito parecido. Ambas saturam o mAP50 e têm precisão, revocação e F1-\textit{score} acima de 0,99. No mAP50-95, os especialistas variam de 0,8338 a 0,9015, e o baseline tem média de 0,8773 e melhor \textit{fold} com 0,8965.
+
+Essa comparação, porém, não é direta, por três motivos. Primeiro, os números dos especialistas são os do melhor \textit{fold} de cada um, enquanto o valor de referência do baseline é a média dos cinco \textit{folds}; comparar o melhor caso de uma abordagem com a média da outra favorece a primeira. Comparando melhor \textit{fold} com melhor \textit{fold}, o baseline (0,8965) supera três dos quatro especialistas no mAP50-95 e fica abaixo apenas de Frontal Dia (0,9015). Segundo, cada especialista é avaliado apenas sobre o seu cenário, enquanto o baseline é avaliado sobre a união dos quatro; o mAP50-95 do baseline é uma média que mistura cenários mais fáceis e mais difíceis. Terceiro, como discutido nas seções anteriores, as tabelas usam a época de maior mAP50, que não corresponde aos pesos salvos.
+
+A forma mais justa de comparar as duas abordagens nas métricas agregadas seria avaliar o baseline separadamente sobre a validação de cada cenário, no mesmo \textit{fold} e na época dos pesos salvos, e comparar cenário a cenário com o especialista correspondente. Essa avaliação não foi feita neste trabalho. \todo{Avaliar o \texttt{best.pt} de cada \textit{fold} do baseline sobre o subconjunto de validação de cada cenário e comparar com os especialistas, cenário a cenário.} Com os dados disponíveis, a conclusão possível é que a arquitetura MoE não demonstra superioridade sobre o baseline nas métricas agregadas de detecção: no regime de dados deste trabalho, um único YOLOv8m consegue aprender uma representação conjunta competitiva das quatro combinações de perspectiva e iluminação.
+
+\section{Avaliação em Vídeos de Teste Independentes}
+\label{sec:res-videos}
+
+\subsection{Verificação de Vazamento}
+\label{subsec:res-vazamento}
+
+A Tabela~\ref{tab:res-vazamento} mostra o resultado da verificação de vazamento descrita na Seção~\ref{subsec:videos-teste}. Nenhum dos quatro vídeos foi identificado como recorte de uma sessão de treino. Nos três vídeos em que algum par passou pelo pré-filtro de \textit{hash}, o menor MSE encontrado ficou entre 1.326,8 e 2.546,8, na mesma ordem de grandeza da diferença entre dois quadros distintos de uma mesma sessão de treino (750 a 1.200) e muito acima do limiar de duplicata (60). No vídeo Superior Dia, nenhum par passou pelo pré-filtro, o que indica que nenhuma imagem de treino das sessões candidatas era sequer parecida com os quadros de teste.
+
+\begin{table}[htb]
+\centering
+\caption{Verificação de vazamento entre os vídeos de teste e as sessões de treinamento.}
+\label{tab:res-vazamento}
+\footnotesize
+\begin{tabular}{lccc}
+\hline
+\textbf{Vídeo de teste} & \textbf{Data coincide com treino?} & \textbf{Menor MSE} & \textbf{Resultado} \\
+\hline
+Frontal Dia & Não & 2.546,8 & sem vazamento \\
+Frontal Noite & Sim (8 sessões) & 1.326,8 & sem vazamento \\
+Superior Dia & Sim (3 sessões) & -- (nenhum par no pré-filtro) & sem vazamento \\
+Superior Noite & Sim (3 sessões) & 2.355,4 & sem vazamento \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+\normalsize
+Fonte: Elaborada pelo autor.
+\end{table}
+
+Há uma ressalva sobre o vídeo Superior Noite. As sessões candidatas foram escolhidas pela data indicada no nome do arquivo (29 de abril), mas a marca gravada nos quadros desse vídeo indica 26 de abril, às 20h45. Assim, a comparação por MSE foi feita contra sessões de outro dia, e não contra as três sessões da câmera Cam04 gravadas em 26 de abril. Como essas sessões começam às 0h07, 4h06 e 18h06 e têm no máximo alguns minutos de duração, é pouco provável que o vídeo de teste seja um trecho de alguma delas, mas a verificação precisa ser refeita contra essas sessões para que o resultado seja conclusivo. \todo{Refazer a verificação de vazamento do vídeo Superior Noite contra as sessões da Cam04 de 26/04/2025.}
+
+\subsection{Roteamento}
+\label{subsec:res-roteamento-videos}
+
+A rede de roteamento escolheu o cenário correto nos quatro vídeos. A confiança da escolha, isto é, a probabilidade atribuída pela \textit{softmax} ao cenário escolhido, foi de 99,32\% em Frontal Dia, 99,38\% em Superior Dia e 99,99\% em Superior Noite. Em Frontal Noite, foi de apenas 62,67\%.
+
+Mesmo correta, uma confiança de 62,67\% indica que, para o primeiro quadro desse vídeo, a rede distribuiu uma parte considerável da probabilidade entre outros cenários. Isso mostra que o acerto total na validação (Seção~\ref{subsec:res-treino-roteamento}) superestima a margem de segurança da rede em vídeos novos, e que o roteamento feito com base em um único quadro tem, nesse cenário, pouca folga. Um fator que pode contribuir é que Frontal Noite é a classe com menos imagens na base da rede de roteamento (80, contra 560 de Frontal Dia). \todo{Investigar o primeiro quadro do vídeo Frontal Noite: verificar para qual cenário foi o restante da probabilidade e se o quadro tem alguma particularidade (iluminação, exposição, animais próximos à câmera).} Uma forma simples de tornar o roteamento mais seguro seria classificar vários quadros do início do vídeo e decidir pela média das probabilidades, em vez de usar apenas o primeiro.
+
+\subsection{Contagem de Animais}
+\label{subsec:res-contagem}
+
+A Tabela~\ref{tab:res-contagem} apresenta o total de caixas detectadas por cada abordagem em cada vídeo. Como os oito animais estão na baia em todos os quadros, o valor esperado é de 640 caixas por vídeo.
+
+\begin{table}[htb]
+\centering
+\caption{Total de caixas detectadas nos vídeos de teste (80 quadros cada; valor esperado de $8 \times 80 = 640$).}
+\label{tab:res-contagem}
+\begin{tabular}{lccc}
+\hline
+\textbf{Cenário} & \textbf{Baseline} & \textbf{MoE} & \textbf{Esperado} \\
+\hline
+Frontal Dia & 623 & 640 & 640 \\
+Frontal Noite & 643 & 640 & 640 \\
+Superior Dia & 532 & 640 & 640 \\
+Superior Noite & 663 & 640 & 640 \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+Fonte: Elaborada pelo autor.
+\end{table}
+
+A arquitetura MoE produziu exatamente 640 caixas nos quatro vídeos, com oito caixas em cada um dos 320 quadros. O baseline errou a contagem nos quatro vídeos, ora para menos, ora para mais. A análise quadro a quadro mostra dois padrões de erro diferentes.
+
+O primeiro é a subdetecção. No vídeo Superior Dia, o baseline não chegou a oito caixas em nenhum dos 80 quadros, oscilando entre cinco e sete, e o total ficou 108 caixas abaixo do esperado. Nesse vídeo, os animais aparecem agrupados e encostados uns nos outros, e o baseline tende a deixar de fora animais parcialmente encobertos pelos vizinhos. No vídeo Frontal Dia, o total ficou 17 caixas abaixo do esperado.
+
+O segundo é a sobredetecção. No vídeo Superior Noite, 26 dos 80 quadros tiveram mais de oito caixas, chegando a dez, e no vídeo Frontal Noite isso ocorreu em 4 dos 80 quadros. Nesses quadros, as caixas excedentes não são falsos positivos sobre o fundo: são caixas duplicadas sobre um animal que já tinha sido detectado. O IoU entre a caixa duplicada e a original chegou a 0,64, abaixo do limiar de 0,7 da supressão de não máximos, de modo que as duas caixas foram mantidas pelo pós-processamento. Nos totais da Tabela~\ref{tab:res-contagem}, a sobredetecção pode encobrir parte da subdetecção; o total de Frontal Noite (643), por exemplo, está próximo do esperado, mas inclui quadros com caixas a mais.
+
+A Figura~\ref{fig:comparacao-videos} mostra exemplos desses erros, com o baseline à esquerda e o especialista correspondente à direita, no mesmo quadro de cada vídeo. Em Frontal Dia (a, b) e Superior Dia (e, f), o baseline detecta seis e cinco animais, respectivamente, e o especialista detecta os oito. Em Frontal Noite (c, d) e Superior Noite (g, h), o baseline atribui duas caixas a um mesmo animal, ambas com confiança de pelo menos 0,73, enquanto o especialista delimita cada animal com uma única caixa.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.82\textwidth]{figs/comparacao_overall_moe.png}
+\caption{Baseline monolítico (esquerda) e especialista MoE correspondente (direita), no mesmo quadro do mesmo vídeo de teste: (a)-(b) Frontal Dia, quadro 10 (6 e 8 caixas); (c)-(d) Frontal Noite, quadro 55 (9 e 8 caixas); (e)-(f) Superior Dia, quadro 62 (5 e 8 caixas); (g)-(h) Superior Noite, quadro 6 (10 e 8 caixas).}
+\label{fig:comparacao-videos}
+
+Fonte: Elaborada pelo autor.
+\end{figure}
+
+As 2.560 caixas produzidas pelos especialistas nos quatro vídeos tiveram confiança entre 0,74 e 0,96, com média de 0,91. Como o limiar de confiança usado foi 0,7, nenhuma caixa ficou muito perto do limite de corte, o que indica que a contagem correta não dependeu de um ajuste fino desse limiar.
+
+\section{Discussão}
+\label{sec:res-discussao}
+
+\subsection{Por que as Métricas Agregadas não Mostram a Diferença}
+\label{subsec:disc-metricas}
+
+Os resultados das Seções~\ref{sec:res-comparacao-metricas} e~\ref{sec:res-videos} parecem contraditórios. Nas métricas de validação cruzada, as duas abordagens empatam; na contagem em vídeo, o baseline erra nos quatro cenários e o MoE acerta todos os quadros. Há duas razões principais para essa diferença.
+
+A primeira é que as duas avaliações medem coisas diferentes. O mAP resume a qualidade do detector em todos os limiares de confiança, ordenando as caixas da mais confiante para a menos confiante. Uma caixa duplicada sobre um animal já detectado conta como um falso positivo, mas, se tiver confiança menor que a das caixas corretas, entra no fim dessa ordenação e reduz pouco a área sob a curva de precisão e revocação. Na contagem, em um limiar fixo de 0,7, a mesma caixa duplicada soma um animal a mais no quadro. Do mesmo modo, um animal detectado com confiança 0,6 contribui para o mAP, mas desaparece da contagem com o limiar de 0,7.
+
+A segunda é que os vídeos de teste são mais distantes do treino que os blocos de validação. Como discutido na Seção~\ref{subsec:limitacoes-protocolo}, a validação usa trechos de sessões cujos outros trechos foram vistos no treino. Os vídeos de teste vêm de momentos diferentes, com outras posições e agrupamentos dos animais. É razoável supor que, diante de dados realmente novos, as diferenças entre as abordagens apareçam mais do que na validação cruzada, e foi o que se observou.
+
+\subsection{Interpretação do Desempenho dos Especialistas}
+\label{subsec:disc-especialistas}
+
+Os especialistas mantiveram a contagem correta nos quatro cenários, inclusive naqueles em que o baseline mais errou. Uma interpretação compatível com esses resultados é que cada especialista, treinado com imagens de uma única combinação de perspectiva e iluminação, ajusta o tamanho e a forma das caixas e o nível de confiança a uma distribuição visual mais homogênea. O baseline precisa conciliar, nos mesmos parâmetros, animais grandes e vistos de lado nas câmeras frontais com animais menores e vistos de cima nas câmeras superiores, em imagens coloridas e em infravermelho. Os erros do baseline foram diferentes em cada cenário (subdetecção nos cenários diurnos, sobredetecção nos noturnos), o que é coerente com um modelo cujo ajuste é um compromisso entre cenários. Essa interpretação, no entanto, não foi testada diretamente, e outros fatores, como diferenças entre os \textit{folds} escolhidos, podem contribuir para o resultado.
+
+\subsection{Vantagens e Custos da Arquitetura Modular}
+\label{subsec:disc-modularidade}
+
+Além da estabilidade da contagem, a arquitetura MoE tem propriedades estruturais que as métricas não medem. Um novo cenário, como uma nova câmera ou uma nova baia, pode ser incorporado treinando um novo especialista e acrescentando uma classe à rede de roteamento, sem retreinar os especialistas existentes. Uma dificuldade própria de um cenário, como o mAP50-95 mais baixo da perspectiva superior, fica restrita ao especialista daquele cenário e pode ser tratada nele, por exemplo com mais dados, sem risco de piorar os demais. E a rede de roteamento informa, para cada vídeo, qual especialista foi usado e com que confiança, um sinal que pode ser registrado e auditado e que não existe em um detector único.
+
+Esses benefícios têm custos. O sistema tem cinco modelos em vez de um, e o treinamento dos especialistas e da rede de roteamento exige mais etapas que o de um detector único. O roteamento é um ponto único de falha: um erro no primeiro quadro leva o vídeo inteiro a um especialista inadequado, e o caso de Frontal Noite mostrou que a margem da rede de roteamento pode ser pequena em vídeos novos. No custo de inferência, as duas abordagens se equivalem, pois executam um único YOLOv8m por quadro, e a rede de roteamento é executada apenas uma vez por vídeo. Nos testes, tanto o \textit{pipeline} MoE quanto o baseline processaram cada vídeo de 80 quadros em menos de 3 segundos na GPU usada nos experimentos; esses tempos podem incluir o aquecimento inicial do modelo e não foram medidos de forma controlada, e não foram feitas medições em equipamentos de menor capacidade.
+
+\subsection{Limitações}
+\label{subsec:disc-limitacoes}
+
+Os resultados deste capítulo devem ser lidos com as seguintes limitações. A validação cruzada não separa sessões inteiras entre treino e validação, e a validação da rede de roteamento foi feita com divisão aleatória por quadro. A comparação nas métricas agregadas não foi feita cenário a cenário, e as métricas tabeladas correspondem à época de maior mAP50, e não aos pesos salvos. A avaliação em vídeo usou um único vídeo por cenário, com 80 quadros cada, sem rótulos, e a métrica de contagem não distingue um animal perdido de um compensado por uma caixa duplicada no mesmo quadro. Por fim, toda a base vem de uma única baia, com o mesmo rebanho de oito animais, e o comportamento dos modelos em outras instalações não foi avaliado. Essas limitações não invalidam o padrão observado, que foi consistente nos quatro cenários, mas restringem o alcance das conclusões e orientam os trabalhos futuros discutidos no Capítulo~6.

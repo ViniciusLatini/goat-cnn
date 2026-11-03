@@ -68,3 +68,10 @@ venv/
 *.swp
 .DS_Store
 Thumbs.db
+
+# ---------- LaTeX (monografia) ----------
+monografia/build/
+*.aux
+*.synctex.gz
+*.fdb_latexmk
+*.fls

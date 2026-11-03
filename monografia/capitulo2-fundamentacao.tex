@@ -1,0 +1,99 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%--------------CAPÍTULO 2 - FUNDAMENTAÇÃO TEÓRICA------------
+%
+%
+\chapter{Fundamentação Teórica}
+\label{cap:fundamentacao}
+
+Este capítulo reúne os conceitos usados na proposta descrita no Capítulo~\ref{cap:introducao}. A Seção~\ref{sec:redes-neurais-convolucionais} introduz as redes neurais convolucionais, base de praticamente todos os modelos de visão computacional usados neste trabalho. A Seção~\ref{sec:deteccao-objetos-yolo} define a tarefa de detecção de objetos e descreve a evolução da família YOLO. A Seção~\ref{sec:efficientnet} apresenta a arquitetura EfficientNet, e a Seção~\ref{sec:mistura-especialistas}, o paradigma de Mistura de Especialistas. A Seção~\ref{sec:metricas-avaliacao} formaliza as métricas de avaliação de detectores. A Seção~\ref{sec:validacao-cruzada-vazamento} discute a validação cruzada e o vazamento de dados em conjuntos com dependência temporal. Por fim, a Seção~\ref{sec:explicabilidade-oclusao} apresenta a análise de sensibilidade por oclusão, usada para interpretar as decisões de um dos modelos deste trabalho.
+
+\section{Redes Neurais Convolucionais}
+\label{sec:redes-neurais-convolucionais}
+
+As Redes Neurais Convolucionais (\textit{Convolutional Neural Networks}, CNN) são redes neurais artificiais voltadas ao processamento de dados organizados em grade, como imagens \cite{lecun1998gradient}. Em uma rede totalmente conectada, cada neurônio recebe todos os pixels da entrada. Uma CNN, em vez disso, aplica pequenos filtros (\textit{kernels}) que percorrem a imagem e produzem mapas de características (\textit{feature maps}). Essa operação, a convolução, se apoia em duas propriedades da informação visual. A primeira é a localidade: padrões como bordas, texturas e formas costumam depender apenas de uma vizinhança de pixels. A segunda é a invariância à translação: um mesmo padrão deve ser reconhecido em qualquer posição da imagem. Como o mesmo filtro é reutilizado em toda a imagem (compartilhamento de parâmetros), uma CNN tem muito menos parâmetros do que uma rede totalmente conectada equivalente, o que reduz o custo computacional e o risco de sobreajuste.
+
+Uma CNN típica alterna camadas convolucionais com camadas de agrupamento (\textit{pooling}), que reduzem a resolução espacial dos mapas de características e preservam as informações mais relevantes. Ao final, uma ou mais camadas totalmente conectadas combinam as características extraídas em uma predição, como a classe de um objeto. As primeiras camadas tendem a responder a bordas e texturas simples, e as camadas seguintes combinam esses padrões em estruturas cada vez mais abstratas, como partes de objetos e objetos completos. Essa hierarquia é aprendida diretamente dos dados, sem extratores de características projetados à mão, e foi um dos motivos pelos quais as CNNs passaram a dominar a visão computacional depois do sucesso de arquiteturas profundas treinadas em larga escala, como a AlexNet \cite{krizhevsky2012alexnet}. Os detectores da família YOLO (Seção~\ref{sec:deteccao-objetos-yolo}) e a rede EfficientNet (Seção~\ref{sec:efficientnet}), usados neste trabalho, são CNNs organizadas de formas diferentes para resolver tarefas diferentes.
+
+\section{Detecção de Objetos e a Família YOLO}
+\label{sec:deteccao-objetos-yolo}
+
+\subsection{A Tarefa de Detecção de Objetos}
+\label{subsec:tarefa-deteccao}
+
+Na detecção de objetos, o modelo recebe uma imagem e deve identificar todos os objetos de interesse presentes nela, informando a classe e a localização de cada um. Na classificação de imagens, uma única classe é atribuída à imagem inteira; na detecção, cada objeto é delimitado por uma caixa delimitadora (\textit{bounding box}), em geral um retângulo alinhado aos eixos da imagem e descrito por quatro valores, como as coordenadas do centro, a largura e a altura. O detector também atribui a cada predição um escore de confiança, que indica o quanto o modelo está seguro de que aquela região contém um objeto da classe indicada.
+
+Os detectores baseados em aprendizado profundo costumam ser divididos em duas famílias. Os detectores de duas etapas primeiro geram regiões candidatas a conter um objeto e depois classificam e refinam cada região. Os detectores de uma etapa predizem as caixas e as classes diretamente a partir da imagem completa, em uma única passagem pela rede. A família YOLO, descrita a seguir, segue a segunda abordagem. Detectores de uma etapa tendem a ser mais rápidos e, historicamente, eram um pouco menos precisos que os de duas etapas, diferença que as versões mais recentes reduziram bastante.
+
+\subsection{A Família YOLO}
+\label{subsec:familia-yolo}
+
+O YOLO (\textit{You Only Look Once}) \cite{redmon2016yolo} trata a detecção como um único problema de regressão. A imagem de entrada é dividida em uma grade, e cada célula prevê um número fixo de caixas delimitadoras, seus escores de confiança e as probabilidades de classe, tudo em uma única passagem pela rede. Sem uma etapa separada de geração de regiões candidatas, o modelo é treinado e executado de ponta a ponta, o que favorece a velocidade de inferência, um fator importante para o monitoramento em vídeo.
+
+As versões seguintes mantiveram essa formulação e acrescentaram melhorias. O YOLOv2 (ou YOLO9000) incorporou caixas-âncora (\textit{anchor boxes}), formas de referência predefinidas que facilitam a predição de objetos com proporções variadas, e normalização em lote (\textit{batch normalization}), que estabilizou o treinamento \cite{redmon2017yolov2}. O YOLOv3 passou a fazer predições em múltiplas escalas, o que melhorou a detecção de objetos pequenos, e adotou uma rede-base mais profunda, a Darknet-53 \cite{redmon2018yolov3}. O YOLOv4 reuniu um conjunto de técnicas de treinamento e uma rede-base revisada (CSPDarknet), ganhando precisão sem perder velocidade de inferência \cite{bochkovskiy2020yolov4}. As versões mantidas pela Ultralytics abandonaram as caixas-âncora em favor de uma formulação sem âncoras (\textit{anchor-free}), em que o modelo prediz os limites do objeto diretamente a partir de cada ponto da grade, e separaram a predição de classe e a de localização em ramos distintos da rede (cabeça desacoplada). O YOLOv8, usado neste trabalho no teste preliminar com pesos pré-treinados e no treinamento dos detectores próprios (Capítulo~4), segue essa formulação \cite{jocher2023yolov8}.
+
+Os pesos pré-treinados distribuídos com os modelos YOLO costumam ser obtidos no COCO (\textit{Common Objects in Context}) \cite{journals/corr/LinMBHPRDZ14}, uma base de propósito geral com mais de 80 classes de objetos do cotidiano, criada para pesquisas em detecção, segmentação e legendagem de imagens. O COCO não cobre todas as categorias de interesse de aplicações específicas, e caprinos são um desses casos. Por isso, em domínios especializados, os pesos pré-treinados no COCO servem como ponto de partida para o treinamento, e raramente como solução final.
+
+\section{A Arquitetura EfficientNet}
+\label{sec:efficientnet}
+
+A EfficientNet é uma família de redes convolucionais de classificação de imagens construída em torno do escalonamento composto (\textit{compound scaling}) \cite{tan2019efficientnet}. Há três formas de aumentar a capacidade de uma rede convolucional: torná-la mais profunda (mais camadas), mais larga (mais filtros por camada) ou aumentar a resolução das imagens de entrada. Trabalhos anteriores costumavam escalonar apenas uma dessas dimensões. A EfficientNet escalona as três em conjunto, de forma equilibrada, controladas por um único coeficiente. O ponto de partida é a EfficientNet-B0, uma arquitetura obtida por busca automática e formada principalmente por blocos convolucionais residuais invertidos com atenção por canal (\textit{squeeze-and-excitation}). O escalonamento da B0 gera as variantes maiores da família (B1 a B7), mais precisas e mais custosas.
+
+A EfficientNet-B0 atinge, no ImageNet, acurácia comparável à de arquiteturas de classificação anteriores de capacidade semelhante, com uma fração dos parâmetros e do custo computacional \cite{tan2019efficientnet}. Isso a torna adequada para tarefas de classificação auxiliares dentro de um sistema maior, em que o classificador não pode pesar no custo total de inferência. É esse o papel da EfficientNet-B0 na arquitetura descrita no Capítulo~4.
+
+\section{Mistura de Especialistas}
+\label{sec:mistura-especialistas}
+
+O paradigma de Mistura de Especialistas (\textit{Mixture of Experts}, MoE) divide um problema de aprendizado em subproblemas mais simples, cada um atribuído a um modelo especializado (um \textit{especialista}). Uma rede de roteamento (\textit{gating network}) decide, para cada entrada, qual especialista ou combinação de especialistas deve ser consultada \cite{jacobs1991adaptive}. Dados $K$ especialistas $f_1, \ldots, f_K$ e uma rede de roteamento $g$ que produz um peso $g_k(x)$ para cada especialista a partir da entrada $x$, a formulação original combina as saídas de todos os especialistas por uma soma ponderada:
+\begin{equation}
+    y(x) = \sum_{k=1}^{K} g_k(x) \, f_k(x).
+    \label{eq:moe-soft}
+\end{equation}
+Nessa formulação, a rede de roteamento e os especialistas são treinados juntos. A rede de roteamento aprende a dividir o espaço de entradas em regiões, e cada especialista se torna mais competente na sua região, sem que todos precisem se ajustar a toda a variabilidade dos dados.
+
+Muitas arquiteturas profundas recentes substituem a combinação ponderada por um roteamento esparso, em que a rede de roteamento seleciona apenas um pequeno subconjunto de especialistas para cada entrada \cite{shazeer2017outrageously}. No limite, apenas um especialista é escolhido (roteamento \textit{top-1}), e a Equação~\ref{eq:moe-soft} dá lugar a
+\begin{equation}
+    y(x) = f_{k^*(x)}(x), \quad k^*(x) = \arg\max_{k} \, g_k(x).
+    \label{eq:moe-hard}
+\end{equation}
+Como só o especialista selecionado é executado, o custo de inferência cai. Em troca, a decisão de roteamento se torna um ponto único de falha: se a entrada for enviada ao especialista errado, a combinação com os demais não tem como corrigir o erro. A escolha entre roteamento ponderado e esparso, e a granularidade em que o roteamento é feito, dependem do problema; o Capítulo~4 discute essas escolhas para o caso deste trabalho.
+
+\section{Métricas de Avaliação de Detectores de Objetos}
+\label{sec:metricas-avaliacao}
+
+Para avaliar um detector, é preciso primeiro decidir quando uma caixa predita corresponde a um objeto anotado (a verdade de referência, ou \textit{ground truth}). Essa correspondência é medida pela Intersecção sobre União (\textit{Intersection over Union}, IoU), a razão entre a área de interseção e a área de união da caixa predita $B_p$ e da caixa de referência $B_g$:
+\begin{equation}
+    \mathrm{IoU}(B_p, B_g) = \frac{\mbox{Área}(B_p \cap B_g)}{\mbox{Área}(B_p \cup B_g)}.
+    \label{eq:iou}
+\end{equation}
+O IoU vai de 0 (caixas disjuntas) a 1 (caixas idênticas). Fixado um limiar de IoU, tipicamente 0,5, uma predição é um verdadeiro positivo (VP) se houver uma caixa de referência da mesma classe, ainda não associada, com IoU acima do limiar; caso contrário, é um falso positivo (FP). Uma caixa de referência que não é associada a nenhuma predição é um falso negativo (FN) \cite{everingham2010pascalvoc}.
+
+Com essas contagens, definem-se a precisão, fração das predições que estão corretas, e a revocação, fração dos objetos reais que foram detectados:
+\begin{equation}
+    \mbox{Precisão} = \frac{VP}{VP + FP}, \qquad
+    \mbox{Revocação} = \frac{VP}{VP + FN}.
+    \label{eq:precision-recall}
+\end{equation}
+Precisão e revocação costumam variar em sentidos opostos quando se altera o limiar de confiança do detector, por isso é comum resumi-las no F1-\textit{score}, a média harmônica entre as duas:
+\begin{equation}
+    F1 = 2 \cdot \frac{\mbox{Precisão} \cdot \mbox{Revocação}}{\mbox{Precisão} + \mbox{Revocação}}.
+    \label{eq:f1}
+\end{equation}
+
+Variando o limiar de confiança, obtém-se uma curva de precisão em função da revocação. A área sob essa curva é a Precisão Média (\textit{Average Precision}, AP) para uma classe e um limiar de IoU fixos. Com várias classes, a Precisão Média Média (\textit{mean Average Precision}, mAP) é a média das AP de cada classe\footnote{No caso de uma classe única, como neste trabalho, a mAP coincide com a AP dessa classe.}. A literatura de detecção costuma reportar a mAP em dois regimes: a mAP50, calculada com um único limiar de IoU de 0,5, e a mAP50-95, média da AP em dez limiares de IoU igualmente espaçados entre 0,5 e 0,95 \cite{journals/corr/LinMBHPRDZ14}. A mAP50-95 é mais exigente, pois penaliza caixas que acertam a presença e a classe do objeto, mas localizam o objeto apenas de forma aproximada.
+
+\section{Validação Cruzada e Vazamento de Dados}
+\label{sec:validacao-cruzada-vazamento}
+
+A validação cruzada estima a capacidade de generalização de um modelo, isto é, seu desempenho esperado sobre dados que não foram usados no treinamento. Na variante \textit{K-Fold}, o conjunto de dados é dividido em $K$ subconjuntos (\textit{folds}) de tamanho aproximadamente igual. O modelo é treinado $K$ vezes, e em cada vez um \textit{fold} diferente é reservado para validação e os $K-1$ restantes são usados no treino; o desempenho final resume os $K$ resultados \cite{kohavi1995study}. O procedimento supõe que as amostras sejam independentes entre si. Só assim o desempenho no \textit{fold} de validação diz algo sobre o desempenho em dados novos.
+
+Essa suposição falha quando as amostras têm alguma dependência estrutural, seja temporal, espacial, hierárquica ou de outra natureza, que o particionamento não considera \cite{roberts2017crossvalidation}. Se amostras correlacionadas são distribuídas entre treino e validação, o modelo é avaliado sobre dados que, embora formalmente separados, carregam informação já vista no treino. Esse é o vazamento de dados (\textit{data leakage}) \cite{kaufman2012leakage}. As métricas de validação passam a refletir, em maior ou menor grau, a capacidade do modelo de memorizar amostras parecidas com as de validação, e o resultado típico é um desempenho inflado que não se mantém quando o modelo encontra dados realmente novos. Para reduzir esse risco, o particionamento precisa respeitar a estrutura de dependência dos dados. Uma opção é agrupar as amostras dependentes para que fiquem inteiras de um único lado da partição; outra é impor uma distância mínima entre as amostras de treino e de validação mais próximas. O protocolo adotado neste trabalho, descrito no Capítulo~4, segue a segunda opção.
+
+\section{Explicabilidade por Oclusão}
+\label{sec:explicabilidade-oclusao}
+
+Redes neurais profundas costumam ser chamadas de caixas-pretas: produzem predições precisas, mas não é possível entender, a partir dos seus parâmetros, como combinam a entrada para chegar a uma decisão. As técnicas de explicabilidade procuram indicar quais partes da entrada mais influenciaram uma predição específica.
+
+A análise de sensibilidade por oclusão, proposta no contexto da visualização de redes convolucionais \cite{zeiler2014visualizing}, é uma dessas técnicas. Uma pequena região da imagem é substituída por um valor neutro, como um cinza uniforme, e mede-se o quanto a predição do modelo muda em relação à obtida com a imagem original. Repetindo o procedimento para regiões que cobrem toda a imagem, obtém-se um mapa de sensibilidade. As regiões cuja oclusão muda muito a predição são as que mais sustentam a decisão do modelo; as que pouco a alteram são irrelevantes para ela. Ao contrário das técnicas baseadas em gradiente, a oclusão não exige acesso aos parâmetros internos do modelo nem diferenciabilidade em relação à entrada. Basta executar predições, o que permite aplicá-la diretamente a modelos já treinados.
+
+Neste trabalho, a análise foi implementada com a biblioteca Captum \cite{kokhlikyan2020captum}, que oferece oclusão por janelas deslizantes para modelos construídos em PyTorch. O Capítulo~5 detalha sua aplicação ao modelo que identifica o cenário de captura.
